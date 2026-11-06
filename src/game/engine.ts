@@ -15,6 +15,16 @@ export interface GameStats {
 
 type PowerType = "shield" | "slowmo" | "magnet";
 
+export type SkinId = "classic" | "plasma" | "toxic" | "sunset" | "ice" | "void";
+export const SKINS: { id: SkinId; name: string; unlock: number; bright: string; mid: string; dark: string; glow: string }[] = [
+  { id: "classic", name: "CYAN CORE", unlock: 0, bright: "#ffffff", mid: "#a5f3fc", dark: "#0891b2", glow: "#22d3ee" },
+  { id: "plasma", name: "PLASMA", unlock: 10, bright: "#ffffff", mid: "#f0abfc", dark: "#a21caf", glow: "#e879f9" },
+  { id: "toxic", name: "TOXIC", unlock: 25, bright: "#f7fee7", mid: "#bef264", dark: "#4d7c0f", glow: "#a3e635" },
+  { id: "sunset", name: "SUNSET", unlock: 50, bright: "#fff7ed", mid: "#fdba74", dark: "#c2410c", glow: "#fb923c" },
+  { id: "ice", name: "ICE", unlock: 75, bright: "#ffffff", mid: "#bfdbfe", dark: "#2563eb", glow: "#60a5fa" },
+  { id: "void", name: "VOID", unlock: 100, bright: "#f5f3ff", mid: "#c4b5fd", dark: "#6d28d9", glow: "#a78bfa" },
+];
+
 interface Spike {
   cy: number;
   len: number;
@@ -107,6 +117,11 @@ export class GameEngine {
   private playTime = 0;
   private maxSpeed = 0;
   private level = 0;
+  private skinId: SkinId = "classic";
+
+  private get skin() { return SKINS.find((s) => s.id === this.skinId) ?? SKINS[0]; }
+
+  setSkin(id: SkinId): void { this.skinId = id; }
 
   private bgTime = 0;
   private glitchT = 0;
@@ -274,7 +289,7 @@ export class GameEngine {
     p.vy = -700 * this.u;
     p.squash = -0.35;
     this.sound.flap();
-    this.burst(p.x, p.y + this.r(), 8, "#67e8f9", 140 * this.u, 0.4, 2.4 * this.u);
+    this.burst(p.x, p.y + this.r(), 8, this.skin.glow, 140 * this.u, 0.4, 2.4 * this.u);
   }
 
   /* ─── Dimensions ───────────────────────────────────────────────── */
@@ -1056,7 +1071,7 @@ export class GameEngine {
     if (this.trail.length > 1) {
       for (let i = 1; i < this.trail.length; i++) {
         const a = i / this.trail.length;
-        ctx.strokeStyle = `rgba(34,211,238,${a * 0.35})`;
+        ctx.strokeStyle = this.skin.glow;
         ctx.lineWidth = r * 1.4 * a;
         ctx.lineCap = "round";
         ctx.beginPath();
@@ -1073,12 +1088,12 @@ export class GameEngine {
     if (p.invuln > 0 && Math.sin(this.bgTime * 30) > 0) ctx.globalAlpha = 0.35;
 
     // noyau
-    ctx.shadowColor = "rgba(34,211,238,0.95)";
+    ctx.shadowColor = this.skin.glow;
     ctx.shadowBlur = 22;
     const g = ctx.createRadialGradient(-r * 0.3, -r * 0.35, r * 0.1, 0, 0, r);
     g.addColorStop(0, "#ffffff");
-    g.addColorStop(0.45, "#a5f3fc");
-    g.addColorStop(1, "#0891b2");
+    g.addColorStop(0.45, this.skin.mid);
+    g.addColorStop(1, this.skin.dark);
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, TAU);
@@ -1086,7 +1101,7 @@ export class GameEngine {
     ctx.shadowBlur = 0;
 
     // anneau directionnel
-    ctx.strokeStyle = "rgba(224,254,255,0.9)";
+    ctx.strokeStyle = this.skin.bright;
     ctx.lineWidth = 1.6;
     ctx.beginPath();
     ctx.arc(0, 0, r * 0.55, p.dir > 0 ? -0.8 : Math.PI - 0.8, p.dir > 0 ? 0.8 : Math.PI + 0.8);
@@ -1095,8 +1110,8 @@ export class GameEngine {
     // bouclier
     if (p.shield) {
       ctx.rotate(this.bgTime * 2.2);
-      ctx.strokeStyle = "rgba(34,211,238,0.85)";
-      ctx.shadowColor = "rgba(34,211,238,0.8)";
+      ctx.strokeStyle = this.skin.glow;
+      ctx.shadowColor = this.skin.glow;
       ctx.shadowBlur = 10;
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -1237,7 +1252,7 @@ export class GameEngine {
     const px = arena.x + arena.w / 2 + Math.cos(t * 0.9) * arena.w * 0.22;
     const py = arena.y + arena.h / 2 + Math.sin(t * 1.3) * arena.h * 0.16;
     const r = 13 * u;
-    ctx.shadowColor = "rgba(34,211,238,0.9)";
+    ctx.shadowColor = this.skin.glow;
     ctx.shadowBlur = 20;
     const g = ctx.createRadialGradient(px - r * 0.3, py - r * 0.35, r * 0.1, px, py, r);
     g.addColorStop(0, "#ffffff");
