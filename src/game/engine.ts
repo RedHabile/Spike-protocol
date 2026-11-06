@@ -85,12 +85,12 @@ const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const GLYPHS = "01ΣΩ∆#%&$@!?<>/|=+*×¤§µ";
 const THREAT_STEPS = [0, 8, 18, 32, 50, 72, 100, 135];
 const BACKGROUND_THEMES = [
-  { score: 0, top: "#04060c", mid: "#070b16", bottom: "#04060c", halo: "rgba(34,211,238,0.07)", grid: "rgba(103,232,249,0.055)", data: "103,232,249" },
-  { score: 10, top: "#10051b", mid: "#190a29", bottom: "#080611", halo: "rgba(217,70,239,0.10)", grid: "rgba(232,121,249,0.07)", data: "232,121,249" },
-  { score: 25, top: "#071509", mid: "#0c2010", bottom: "#050b08", halo: "rgba(132,204,22,0.10)", grid: "rgba(190,242,100,0.07)", data: "190,242,100" },
-  { score: 50, top: "#1b0b05", mid: "#281108", bottom: "#0d0705", halo: "rgba(249,115,22,0.11)", grid: "rgba(251,146,60,0.075)", data: "251,146,60" },
-  { score: 75, top: "#061126", mid: "#0a1a32", bottom: "#040914", halo: "rgba(59,130,246,0.11)", grid: "rgba(147,197,253,0.075)", data: "147,197,253" },
-  { score: 100, top: "#10091f", mid: "#1b1030", bottom: "#070511", halo: "rgba(167,139,250,0.13)", grid: "rgba(196,181,253,0.08)", data: "196,181,253" },
+  { score: 0, top: "#020711", mid: "#071827", bottom: "#02040b", halo: "rgba(34,211,238,0.12)", grid: "rgba(103,232,249,0.08)", data: "34,211,238", style: "circuit" },
+  { score: 10, top: "#160522", mid: "#351044", bottom: "#090313", halo: "rgba(232,60,255,0.20)", grid: "rgba(232,121,249,0.10)", data: "232,121,249", style: "stars" },
+  { score: 25, top: "#071b08", mid: "#123b12", bottom: "#030b05", halo: "rgba(163,230,53,0.17)", grid: "rgba(190,242,100,0.09)", data: "190,242,100", style: "matrix" },
+  { score: 50, top: "#2b0904", mid: "#57200a", bottom: "#100402", halo: "rgba(251,146,60,0.20)", grid: "rgba(251,146,60,0.08)", data: "251,146,60", style: "sun" },
+  { score: 75, top: "#03152e", mid: "#082e52", bottom: "#020714", halo: "rgba(56,189,248,0.20)", grid: "rgba(147,197,253,0.10)", data: "147,197,253", style: "scan" },
+  { score: 100, top: "#100526", mid: "#2a0b50", bottom: "#05020e", halo: "rgba(192,132,252,0.22)", grid: "rgba(196,181,253,0.10)", data: "196,181,253", style: "rings" },
 ] as const;
 
 const rankFor = (score: number): string => {
@@ -132,6 +132,9 @@ export class GameEngine {
   setSkin(id: SkinId): void { this.skinId = id; }
 
   private bgTime = 0;
+  private bgThemeIndex = 0;
+  private previousBgThemeIndex = 0;
+  private bgTransitionStart = 0;
   private glitchT = 0;
   private nextGlitch = 2.5;
 
@@ -802,48 +805,108 @@ export class GameEngine {
 
   private renderBackground(): void {
     const { ctx, w, h } = this;
-    // Le décor évolue avec le score, sans modifier l'arène ni le gameplay.
-    const theme = [...BACKGROUND_THEMES].reverse().find((item) => this.score >= item.score) ?? BACKGROUND_THEMES[0];
+    const nextIndex = BACKGROUND_THEMES.reduce((best, item, index) => this.score >= item.score ? index : best, 0);
+    if (nextIndex !== this.bgThemeIndex) {
+      this.previousBgThemeIndex = this.bgThemeIndex;
+      this.bgThemeIndex = nextIndex;
+      this.bgTransitionStart = this.bgTime;
+    }
+    const progress = clamp((this.bgTime - this.bgTransitionStart) / 1.35, 0, 1);
+    const theme = BACKGROUND_THEMES[this.bgThemeIndex];
+    const previous = BACKGROUND_THEMES[this.previousBgThemeIndex];
 
-    const g = ctx.createLinearGradient(0, 0, 0, h);
-    g.addColorStop(0, theme.top);
-    g.addColorStop(0.55, theme.mid);
-    g.addColorStop(1, theme.bottom);
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, w, h);
+    // Fondu entre les deux palettes.
+    const drawBase = (palette: typeof BACKGROUND_THEMES[number], alpha: number) => {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      const gradient = ctx.createLinearGradient(0, 0, 0, h);
+      gradient.addColorStop(0, palette.top);
+      gradient.addColorStop(0.55, palette.mid);
+      gradient.addColorStop(1, palette.bottom);
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, w, h);
+      const halo = ctx.createRadialGradient(w / 2, h / 2, 40, w / 2, h / 2, Math.max(w, h) * 0.55);
+      halo.addColorStop(0, palette.halo);
+      halo.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = halo;
+      ctx.fillRect(0, 0, w, h);
+      ctx.restore();
+    };
+    if (progress < 1) drawBase(previous, 1 - progress);
+    drawBase(theme, progress || 1);
 
-    // halo central assorti à la nouvelle ambiance
-    const rg = ctx.createRadialGradient(w / 2, h / 2, 40, w / 2, h / 2, Math.max(w, h) * 0.55);
-    rg.addColorStop(0, theme.halo);
-    rg.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = rg;
-    ctx.fillRect(0, 0, w, h);
+    // Chaque palier possède son propre motif visuel.
+    ctx.save();
+    ctx.globalAlpha = progress;
+    if (theme.style === "circuit") {
+      ctx.strokeStyle = "rgba(34,211,238,0.17)";
+      for (let x = 18; x < w; x += 92) {
+        const y = (x * 1.73) % Math.max(1, h - 40) + 20;
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 28, y); ctx.lineTo(x + 28, y + 34); ctx.lineTo(x + 58, y + 34); ctx.stroke();
+        ctx.fillStyle = "rgba(103,232,249,0.35)"; ctx.fillRect(x + 25, y - 3, 6, 6);
+      }
+    } else if (theme.style === "stars") {
+      for (let i = 0; i < 75; i++) {
+        const x = (i * 137.5) % w, y = (i * 83.7) % h;
+        const twinkle = 0.35 + 0.65 * Math.abs(Math.sin(this.bgTime * 1.8 + i));
+        ctx.fillStyle = `rgba(250,210,255,${twinkle * 0.65})`;
+        ctx.beginPath(); ctx.arc(x, y, i % 9 === 0 ? 2 : 1, 0, TAU); ctx.fill();
+      }
+    } else if (theme.style === "matrix") {
+      ctx.strokeStyle = "rgba(163,230,53,0.16)";
+      for (let x = 12; x < w; x += 24) {
+        const offset = (this.bgTime * (35 + (x % 5) * 8) + x * 11) % (h + 100);
+        ctx.beginPath(); ctx.moveTo(x, offset - 90); ctx.lineTo(x, offset + 30); ctx.stroke();
+      }
+    } else if (theme.style === "sun") {
+      const cx = w * 0.5, cy = h * 0.48, radius = Math.max(w, h) * 0.43;
+      const sun = ctx.createRadialGradient(cx, cy, 8, cx, cy, radius);
+      sun.addColorStop(0, "rgba(255,190,90,0.20)");
+      sun.addColorStop(0.45, "rgba(249,115,22,0.07)");
+      sun.addColorStop(1, "rgba(249,115,22,0)");
+      ctx.fillStyle = sun; ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = "rgba(251,146,60,0.16)";
+      for (let i = 0; i < 12; i++) {
+        const a = i * TAU / 12 + this.bgTime * 0.025;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * radius, cy + Math.sin(a) * radius); ctx.stroke();
+      }
+    } else if (theme.style === "scan") {
+      ctx.fillStyle = "rgba(125,211,252,0.08)";
+      for (let y = (this.bgTime * 24) % 8; y < h; y += 8) ctx.fillRect(0, y, w, 1);
+      ctx.strokeStyle = "rgba(56,189,248,0.18)";
+      for (let x = -h; x < w + h; x += 42) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + h * 0.28, h); ctx.stroke();
+      }
+    } else if (theme.style === "rings") {
+      const cx = w / 2, cy = h / 2;
+      ctx.strokeStyle = "rgba(196,181,253,0.20)";
+      for (let i = 0; i < 9; i++) {
+        const radius = ((i * 58 + this.bgTime * 22) % (Math.max(w, h) * 0.7)) + 12;
+        ctx.lineWidth = i % 3 === 0 ? 2 : 1;
+        ctx.beginPath(); ctx.arc(cx, cy, radius, 0, TAU); ctx.stroke();
+      }
+    }
+    ctx.restore();
 
-    // grille néon
-    const step = 46;
-    const off = (this.bgTime * 14) % step;
+    // Grille et flux de données de la nouvelle ambiance.
+    ctx.save();
+    ctx.globalAlpha = progress;
+    const step = theme.style === "matrix" ? 28 : theme.style === "scan" ? 64 : 46;
+    const off = (this.bgTime * (theme.style === "scan" ? 28 : 14)) % step;
     ctx.strokeStyle = theme.grid;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    for (let x = 0; x <= w; x += step) {
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, h);
-    }
-    for (let y = -step + off; y <= h + step; y += step) {
-      ctx.moveTo(0, y);
-      ctx.lineTo(w, y);
-    }
+    for (let x = 0; x <= w; x += step) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+    for (let y = -step + off; y <= h + step; y += step) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
     ctx.stroke();
 
-    // ruisseaux de données dans la couleur du décor actuel
     ctx.font = '11px "JetBrains Mono", monospace';
     ctx.textAlign = "center";
     for (const d of this.drops) {
       const spacing = 24;
       const head = ((this.bgTime * d.speed + d.drift * 100) % (this.h + 240)) - 120;
       for (let i = 0; i < d.chars.length; i++) {
-        const y = i * spacing;
-        const dist = Math.abs(y - head);
+        const y = i * spacing, dist = Math.abs(y - head);
         const flick = 0.5 + 0.5 * Math.sin(this.bgTime * 2 + i * 1.7 + d.drift);
         let a = 0.045 * flick;
         if (dist < spacing * 3) a = 0.28 * (1 - dist / (spacing * 3));
@@ -852,8 +915,8 @@ export class GameEngine {
         ctx.fillText(d.chars[i], d.x, y);
       }
     }
+    ctx.restore();
 
-    // tranches glitch
     if (this.glitchT > 0) {
       for (let i = 0; i < 3; i++) {
         const y = rand(0, this.h);
