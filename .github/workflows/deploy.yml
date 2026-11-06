@@ -31,15 +31,10 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
-
-      - name: Build site
-        run: npm run build
-
-      - name: Upload GitHub Pages artifact
+              - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: site
 
       - name: Deploy to GitHub Pages
         id: deployment
