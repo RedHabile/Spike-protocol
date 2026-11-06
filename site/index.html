@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070d">
+<meta name="description" content="SPIKE PROTOCOL — Esquivez les pointes, récupérez les éclats et survivez.">
+<title>SPIKE PROTOCOL</title>
+<style>
+:root{color-scheme:dark;--bg:#05070d;--cyan:#67e8f9;--pink:#f472b6;--panel:#0a1020}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:#e2e8f0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;touch-action:none}
+#game{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hud{position:fixed;z-index:2;top:12px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:center;pointer-events:none;font:10px ui-monospace,monospace;letter-spacing:.2em;color:#8292a8}
+.hud strong{color:var(--cyan);font-size:15px}.hud-right{display:flex;gap:8px;pointer-events:auto}
+.iconbtn{border:1px solid #24536a;background:#081522;color:var(--cyan);border-radius:9px;width:40px;height:38px;font-size:17px}
+.overlay{position:fixed;z-index:3;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:#05070ddc;backdrop-filter:blur(7px)}
+.panel{width:min(92vw,520px);padding:clamp(22px,5vw,38px);border:1px solid #1b5266;background:linear-gradient(145deg,#0d1728f5,#060a14f5);box-shadow:0 0 50px #00d9ff12;text-align:center;clip-path:polygon(0 14px,14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%)}
+.eyebrow{font:11px ui-monospace,monospace;letter-spacing:.35em;color:#67e8f9b8}
+h1{margin:14px 0 0;font-size:clamp(44px,12vw,76px);line-height:.9;letter-spacing:-.05em;color:#f1f5f9}
+h1 span{display:block;color:var(--cyan);font-size:.78em;letter-spacing:.08em;margin-top:8px;text-shadow:0 0 22px #22d3ee66}
+p{color:#9aa9bd;font-size:14px;line-height:1.6}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:22px 0}
+.card{border:1px solid #1b3449;background:#0b1422;padding:12px 5px;border-radius:8px}
+.card b{display:block;color:var(--cyan);font:11px ui-monospace,monospace}.card small{display:block;color:#8392a6;font-size:10px;margin-top:5px}
+button.primary{border:0;border-radius:8px;background:linear-gradient(110deg,#0891b2,#67e8f9);color:#03131b;padding:15px 28px;font-weight:900;letter-spacing:.18em;font-size:13px;min-height:50px}
+button.secondary{border:1px solid #28536a;border-radius:8px;background:#0b1725;color:var(--cyan);padding:13px 20px;font-weight:700;letter-spacing:.12em;font-size:11px;min-height:46px}
+.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.score{font-size:clamp(58px,16vw,88px);font-weight:900;color:var(--cyan);line-height:1;text-shadow:0 0 28px #22d3ee55}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:20px 0}
+.stat{border:1px solid #1b3449;background:#0b1422;padding:10px 3px;border-radius:7px}.stat b{display:block;font-size:18px}.stat small{color:#8292a8;font:9px ui-monospace,monospace}
+.hidden{display:none!important}
+#hint{position:fixed;z-index:2;bottom:15px;left:0;right:0;text-align:center;color:#718198;font:10px ui-monospace,monospace;letter-spacing:.16em;pointer-events:none}
+@media(max-height:620px){.panel{padding:16px 22px}.cards{margin:12px 0}.panel p{margin:8px 0}.eyebrow{font-size:9px}.actions{margin-top:12px}}
+</style>
+</head>
+<body>
+<canvas id="game" aria-label="Zone de jeu Spike Protocol"></canvas>
+<div class="hud"><div>SPIKE.PROTOCOL <strong id="hudScore">000</strong></div><div class="hud-right"><button class="iconbtn" id="pauseBtn" aria-label="Pause">Ⅱ</button><button class="iconbtn" id="soundBtn" aria-label="Son">♫</button></div></div>
+<div id="hint">TOUCHE L'ÉCRAN / ESPACE POUR CHANGER DE DIRECTION</div>
+<section class="overlay" id="menu"><div class="panel">
+<div class="eyebrow">SYS.BRÈCHE // NODE-77</div><h1>SPIKE<span>PROTOCOL</span></h1>
+<p>Survis dans le couloir. Change de direction pour éviter les pointes, récupère les éclats et utilise les bonus pour tenir le plus longtemps possible.</p>
+<div class="cards"><div class="card"><b>IMPULSION</b><small>TOUCHE / ESPACE</small></div><div class="card"><b>BONUS</b><small>BOUCLIER · RALENTI</small></div><div class="card"><b>ÉCLATS</b><small>+3 POINTS</small></div></div>
+<p>RECORD : <strong id="bestMenu" style="color:#fbbf24">0</strong></p><button class="primary" id="startBtn">▶ &nbsp; INITIALISER</button>
+</div></section>
+<section class="overlay hidden" id="pause"><div class="panel"><div class="eyebrow">THREAD.ÉTAT = VEILLE</div><h1 style="font-size:clamp(32px,8vw,52px)">PAUSE</h1><p>Exécution suspendue.</p><div class="actions"><button class="primary" id="resumeBtn">REPRENDRE</button><button class="secondary" id="quitBtn">MENU</button></div></div></section>
+<section class="overlay hidden" id="over"><div class="panel"><div class="eyebrow" style="color:#f472b6">INTEGRITÉ 0% // SIGNAL PERDU</div><h1 style="font-size:clamp(32px,8vw,52px)">FIN DE PARTIE</h1><p>SCORE FINAL</p><div class="score" id="finalScore">0</div><div class="stats"><div class="stat"><b id="bestEnd">0</b><small>RECORD</small></div><div class="stat"><b id="shardsEnd">0</b><small>ÉCLATS</small></div><div class="stat"><b id="timeEnd">0s</b><small>TEMPS</small></div><div class="stat"><b id="levelEnd">1</b><small>NIVEAU</small></div></div><div class="actions"><button class="primary" id="retryBtn">↻ &nbsp; REJOUER</button><button class="secondary" id="menuBtn">MENU</button></div></div></section>
+<script>
+(()=>{
+"use strict";
+const canvas=document.getElementById("game"),ctx=canvas.getContext("2d");
+const $=id=>document.getElementById(id);
+const screens=[$("menu"),$("pause"),$("over")];
+let W=0,H=0,D=1,last=0,raf=0,state="menu",muted=false;
+let player,spikes,shard,power,particles,score,shards,time,level,best=0,speed,shield=0,slow=0,magnet=0,spawnShard=2,spawnPower=9,shake=0;
+try{best=Number(localStorage.getItem("spike-best")||0)||0;muted=localStorage.getItem("spike-muted")==="1"}catch{}
+function resize(){D=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.floor(W*D);canvas.height=Math.floor(H*D);canvas.style.width=W+"px";canvas.style.height=H+"px";ctx.setTransform(D,0,0,D,0,0);if(player){player.x=Math.max(25,Math.min(W-25,player.x));player.y=Math.max(80,Math.min(H-55,player.y))}}
+addEventListener("resize",resize);resize();
+const rand=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function arena(){const w=Math.min(520,W*.9),h=Math.min(H-90,w/0.58);return{x:(W-w)/2,y:(H-h)/2+8,w,h}}
+function wall(){const a=arena(),arr=[],n=Math.min(2+Math.floor(score/12),7);for(let i=0;i<n;i++){let y=rand(a.y+55,a.y+a.h-55);if(player&&Math.abs(y-player.y)<85)continue;arr.push({y,len:rand(22,34),phase:rand(0,1)})}return arr}
+function reset(){score=0;shards=0;time=0;level=1;speed=250;shield=0;slow=0;magnet=0;spawnShard=2.5;spawnPower=8;shake=0;const a=arena();player={x:W/2,y:H/2,vy:0,dir:Math.random()<.5?-1:1,r:12,trail:[]};spikes={l:wall(),r:wall()};shard=null;power=null;particles=[];updateHud()}
+function updateHud(){$("hudScore").textContent=String(score).padStart(3,"0")}
+function show(which){screens.forEach(s=>s.classList.add("hidden"));if(which)$ (which).classList.remove("hidden")}
+function start(){reset();state="playing";show(null);last=performance.now();$("pauseBtn").classList.remove("hidden");}
+function toMenu(){state="menu";show("menu");$("bestMenu").textContent=best;$("pauseBtn").classList.add("hidden")}
+function pause(){if(state==="playing"){state="paused";show("pause")}else if(state==="paused"){state="playing";show(null);last=performance.now()}}
+function end(){state="over";best=Math.max(best,score);try{localStorage.setItem("spike-best",String(best))}catch{}$("finalScore").textContent=score;$("bestEnd").textContent=best;$("shardsEnd").textContent=shards;$("timeEnd").textContent=time.toFixed(1)+"s";$("levelEnd").textContent=level;show("over")}
+function impulse(){if(state!=="playing")return;player.dir*=-1;player.vy=player.dir*560;for(let i=0;i<7;i++)particles.push({x:player.x,y:player.y,vx:rand(-90,90),vy:rand(-90,90),life:.45,max:.45})}
+function spawn(){const a=arena();shard={x:rand(a.x+a.w*.22,a.x+a.w*.78),y:rand(a.y+70,a.y+a.h-70),r:8,spin:0};}
+function spawnBonus(){const a=arena();power={x:rand(a.x+a.w*.25,a.x+a.w*.75),y:rand(a.y+80,a.y+a.h-80),type:["shield","slow","magnet"][Math.floor(Math.random()*3)],life:8}}
+function circleHit(x,y,r,rx,ry,rw,rh){const px=clamp(x,rx,rx+rw),py=clamp(y,ry,ry+rh);return (x-px)**2+(y-py)**2<r*r}
+function update(dt){const a=arena(),p=player;time+=dt;level=1+Math.floor(score/18);speed=Math.min(520,250+score*2.4);if(slow>0)slow-=dt;if(shield>0)shield-=dt;if(magnet>0)magnet-=dt;
+p.vy+=p.dir*180*dt;p.y+=p.vy*dt;p.vy*=Math.pow(.12,dt);p.y=clamp(p.y,a.y+18,a.y+a.h-18);p.trail.push({x:p.x,y:p.y});if(p.trail.length>12)p.trail.shift();
+const advance=speed*(slow>0?.55:1)*dt;
+for(const side of ["l","r"]){for(const s of spikes[side])s.phase+=dt;spikes[side]=spikes[side].filter(s=>s.phase<100)}
+if(Math.random()<dt*(.12+level*.015)){const side=Math.random()<.5?"l":"r";spikes[side].push({y:rand(a.y+45,a.y+a.h-45),len:rand(22,34),phase:0})}
+for(const side of ["l","r"]){for(const s of spikes[side]){const x=side==="l"?a.x:a.x+a.w-28;if(s.phase>.25&&circleHit(p.x,p.y,p.r,x,s.y-s.len/2,28,s.len)){if(shield>0){shield=0;s.phase=999;shake=8}else{end();return}}}}
+if(p.y<=a.y+18||p.y>=a.y+a.h-18){if(shield<=0){end();return}else{p.y=clamp(p.y,a.y+19,a.y+a.h-19);shield=0}}
+if(shard){shard.spin+=dt*4;if(magnet>0){shard.x+=(p.x-shard.x)*dt*2;shard.y+=(p.y-shard.y)*dt*2}if(Math.hypot(p.x-shard.x,p.y-shard.y)<p.r+shard.r+5){score+=3;shards++;shard=null;updateHud()} }
+spawnShard-=dt;if(spawnShard<=0&&!shard){spawn();spawnShard=rand(3.5,5.5)}
+if(power){power.life-=dt;if(power.life<=0)power=null;else if(Math.hypot(p.x-power.x,p.y-power.y)<p.r+17){if(power.type==="shield")shield=7;if(power.type==="slow")slow=5;if(power.type==="magnet")magnet=7;power=null;score+=2;updateHud()}}
+spawnPower-=dt;if(spawnPower<=0&&!power){spawnBonus();spawnPower=rand(12,17)}
+score+=dt*(1+Math.floor(time/12)*.25);score=Math.floor(score);updateHud();
+for(const q of particles){q.x+=q.vx*dt;q.y+=q.vy*dt;q.life-=dt}particles=particles.filter(q=>q.life>0);
+}
+function draw(){ctx.clearRect(0,0,W,H);const a=arena();ctx.fillStyle="#070d18";ctx.fillRect(a.x,a.y,a.w,a.h);ctx.strokeStyle="#164154";ctx.lineWidth=1;ctx.strokeRect(a.x+.5,a.y+.5,a.w-1,a.h-1);
+ctx.save();ctx.beginPath();ctx.rect(a.x,a.y,a.w,a.h);ctx.clip();
+ctx.strokeStyle="#0e2637";ctx.setLineDash([3,10]);ctx.beginPath();ctx.moveTo(a.x+a.w/2,a.y);ctx.lineTo(a.x+a.w/2,a.y+a.h);ctx.stroke();ctx.setLineDash([]);
+for(let i=0;i<18;i++){const y=(i*53+time*40)%(a.h);ctx.fillStyle="#164154";ctx.fillRect(a.x+8,a.y+y,2,2);ctx.fillRect(a.x+a.w-10,a.y+y,2,2)}
+for(const side of ["l","r"]){for(const s of spikes[side]){const x=side==="l"?a.x:a.x+a.w;const fade=Math.min(1,s.phase/.25);ctx.fillStyle=side==="l"?"#f472b6":"#22d3ee";ctx.globalAlpha=fade;ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=12;ctx.beginPath();if(side==="l"){ctx.moveTo(x,s.y-s.len/2);ctx.lineTo(x+27,s.y);ctx.lineTo(x,s.y+s.len/2)}else{ctx.moveTo(x,s.y-s.len/2);ctx.lineTo(x-27,s.y);ctx.lineTo(x,s.y+s.len/2)}ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.globalAlpha=1}}
+if(shard){ctx.save();ctx.translate(shard.x,shard.y);ctx.rotate(shard.spin);ctx.shadowColor="#fbbf24";ctx.shadowBlur=18;ctx.fillStyle="#fbbf24";ctx.beginPath();ctx.moveTo(0,-10);ctx.lineTo(8,0);ctx.lineTo(0,10);ctx.lineTo(-8,0);ctx.closePath();ctx.fill();ctx.restore()}
+if(power){ctx.strokeStyle=power.type==="shield"?"#67e8f9":power.type==="slow"?"#a78bfa":"#f472b6";ctx.lineWidth=2;ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=15;ctx.beginPath();ctx.arc(power.x,power.y,12+Math.sin(time*5)*3,0,Math.PI*2);ctx.stroke();ctx.shadowBlur=0;ctx.fillStyle=ctx.strokeStyle;ctx.font="bold 10px monospace";ctx.textAlign="center";ctx.fillText(power.type==="shield"?"S":power.type==="slow"?"T":"M",power.x,power.y+3)}
+for(const q of particles){ctx.globalAlpha=clamp(q.life/q.max,0,1);ctx.fillStyle="#67e8f9";ctx.fillRect(q.x,q.y,3,3)}ctx.globalAlpha=1;
+if(player){for(let i=0;i<player.trail.length;i++){const t=player.trail[i];ctx.globalAlpha=i/player.trail.length*.25;ctx.fillStyle="#22d3ee";ctx.beginPath();ctx.arc(t.x,t.y,player.r*i/player.trail.length,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;ctx.shadowColor=shield>0?"#67e8f9":"#22d3ee";ctx.shadowBlur=shield>0?28:18;ctx.fillStyle="#e0fbff";ctx.beginPath();ctx.arc(player.x,player.y,player.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;if(shield>0){ctx.strokeStyle="#67e8f9";ctx.lineWidth=2;ctx.beginPath();ctx.arc(player.x,player.y,player.r+7+Math.sin(time*8)*2,0,Math.PI*2);ctx.stroke()}}
+ctx.restore();ctx.fillStyle="#7790a7";ctx.font="10px monospace";ctx.textAlign="left";ctx.fillText("NIVEAU "+level,a.x+8,a.y-10);ctx.textAlign="right";ctx.fillText("VITESSE "+Math.round(speed),a.x+a.w-8,a.y-10);
+}
+function loop(now){raf=requestAnimationFrame(loop);const dt=Math.min(.035,(now-last)/1000||0);last=now;if(state==="playing")update(dt);draw()}
+$("startBtn").onclick=start;$("retryBtn").onclick=start;$("resumeBtn").onclick=pause;$("pauseBtn").onclick=pause;$("quitBtn").onclick=toMenu;$("menuBtn").onclick=toMenu;
+$("soundBtn").onclick=()=>{muted=!muted;try{localStorage.setItem("spike-muted",muted?"1":"0")}catch{}$("soundBtn").textContent=muted?"×":"♫"};
+canvas.addEventListener("pointerdown",e=>{if(state==="playing"){e.preventDefault();impulse()}});
+addEventListener("keydown",e=>{if(e.code==="Space"||e.code==="ArrowUp"){e.preventDefault();if(state==="menu")start();else impulse()}if(e.code==="Escape"||e.code==="KeyP")pause();if(e.code==="Enter"&&(state==="menu"||state==="over"))start()});
+$("pauseBtn").classList.add("hidden");$("bestMenu").textContent=best;$("soundBtn").textContent=muted?"×":"♫";reset();last=performance.now();raf=requestAnimationFrame(loop);
+})();
+</script>
+</body></html>
