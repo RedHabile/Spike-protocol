@@ -832,8 +832,8 @@ export class GameEngine {
       ctx.fillRect(0, 0, w, h);
       ctx.restore();
     };
-    if (progress < 1) drawBase(previous, 1 - progress);
-    drawBase(theme, progress || 1);
+    if (progress < 1) drawBase(previous, 1);
+    drawBase(theme, progress);
 
     // Chaque palier possède son propre motif visuel.
     ctx.save();
