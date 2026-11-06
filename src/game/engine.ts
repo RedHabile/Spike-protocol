@@ -84,6 +84,14 @@ const rand = (a: number, b: number) => a + Math.random() * (b - a);
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const GLYPHS = "01ΣΩ∆#%&$@!?<>/|=+*×¤§µ";
 const THREAT_STEPS = [0, 8, 18, 32, 50, 72, 100, 135];
+const BACKGROUND_THEMES = [
+  { score: 0, top: "#04060c", mid: "#070b16", bottom: "#04060c", halo: "rgba(34,211,238,0.07)", grid: "rgba(103,232,249,0.055)", data: "103,232,249" },
+  { score: 10, top: "#10051b", mid: "#190a29", bottom: "#080611", halo: "rgba(217,70,239,0.10)", grid: "rgba(232,121,249,0.07)", data: "232,121,249" },
+  { score: 25, top: "#071509", mid: "#0c2010", bottom: "#050b08", halo: "rgba(132,204,22,0.10)", grid: "rgba(190,242,100,0.07)", data: "190,242,100" },
+  { score: 50, top: "#1b0b05", mid: "#281108", bottom: "#0d0705", halo: "rgba(249,115,22,0.11)", grid: "rgba(251,146,60,0.075)", data: "251,146,60" },
+  { score: 75, top: "#061126", mid: "#0a1a32", bottom: "#040914", halo: "rgba(59,130,246,0.11)", grid: "rgba(147,197,253,0.075)", data: "147,197,253" },
+  { score: 100, top: "#10091f", mid: "#1b1030", bottom: "#070511", halo: "rgba(167,139,250,0.13)", grid: "rgba(196,181,253,0.08)", data: "196,181,253" },
+] as const;
 
 const rankFor = (score: number): string => {
   if (score >= 100) return "FANTÔME";
@@ -793,26 +801,28 @@ export class GameEngine {
   }
 
   private renderBackground(): void {
-    const { ctx, w, h, arena } = this;
+    const { ctx, w, h } = this;
+    // Le décor évolue avec le score, sans modifier l'arène ni le gameplay.
+    const theme = [...BACKGROUND_THEMES].reverse().find((item) => this.score >= item.score) ?? BACKGROUND_THEMES[0];
 
     const g = ctx.createLinearGradient(0, 0, 0, h);
-    g.addColorStop(0, "#04060c");
-    g.addColorStop(0.55, "#070b16");
-    g.addColorStop(1, "#04060c");
+    g.addColorStop(0, theme.top);
+    g.addColorStop(0.55, theme.mid);
+    g.addColorStop(1, theme.bottom);
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, w, h);
 
-    // halo central
+    // halo central assorti à la nouvelle ambiance
     const rg = ctx.createRadialGradient(w / 2, h / 2, 40, w / 2, h / 2, Math.max(w, h) * 0.55);
-    rg.addColorStop(0, "rgba(34,211,238,0.055)");
-    rg.addColorStop(1, "rgba(34,211,238,0)");
+    rg.addColorStop(0, theme.halo);
+    rg.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = rg;
     ctx.fillRect(0, 0, w, h);
 
-    // grille
+    // grille néon
     const step = 46;
     const off = (this.bgTime * 14) % step;
-    ctx.strokeStyle = "rgba(103,232,249,0.045)";
+    ctx.strokeStyle = theme.grid;
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let x = 0; x <= w; x += step) {
@@ -825,7 +835,7 @@ export class GameEngine {
     }
     ctx.stroke();
 
-    // ruisseaux de données
+    // ruisseaux de données dans la couleur du décor actuel
     ctx.font = '11px "JetBrains Mono", monospace';
     ctx.textAlign = "center";
     for (const d of this.drops) {
@@ -838,7 +848,7 @@ export class GameEngine {
         let a = 0.045 * flick;
         if (dist < spacing * 3) a = 0.28 * (1 - dist / (spacing * 3));
         if (a < 0.02) continue;
-        ctx.fillStyle = `rgba(103,232,249,${a})`;
+        ctx.fillStyle = `rgba(${theme.data},${a})`;
         ctx.fillText(d.chars[i], d.x, y);
       }
     }
@@ -847,12 +857,10 @@ export class GameEngine {
     if (this.glitchT > 0) {
       for (let i = 0; i < 3; i++) {
         const y = rand(0, this.h);
-        ctx.fillStyle = i % 2 ? "rgba(244,114,182,0.05)" : "rgba(34,211,238,0.05)";
+        ctx.fillStyle = i % 2 ? "rgba(244,114,182,0.05)" : theme.halo;
         ctx.fillRect(rand(-30, 0), y, this.w * rand(0.35, 1), rand(2, 9));
       }
     }
-
-    void arena;
   }
 
   private renderArena(): void {
