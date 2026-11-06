@@ -1,9 +1,9 @@
 import { Cpu, Diamond, Home, Play, RotateCcw, Shield, Skull, Timer, TriangleAlert, Wind } from "lucide-react";
-import type { GameStats } from "../game/engine";
+import { SKINS, type GameStats, type SkinId } from "../game/engine";
 
 /* ─── Écran d'accueil ─────────────────────────────────────────────── */
 
-export function StartScreen({ best, onStart }: { best: number; onStart: () => void }) {
+export function StartScreen({ best, selectedSkin, onSelectSkin, onStart }: { best: number; selectedSkin: SkinId; onSelectSkin: (id: SkinId) => void; onStart: () => void }) {
   return (
     <div className="overlay-in absolute inset-0 z-30 flex items-center justify-center bg-[#05070d]/72 backdrop-blur-[6px]">
       <div className="flex w-full max-w-3xl flex-col items-center px-6 text-center">
@@ -45,6 +45,28 @@ export function StartScreen({ best, onStart }: { best: number; onStart: () => vo
               <span className="font-mono text-[8px] tracking-[0.1em] text-slate-500 uppercase sm:text-[9px]">{it.sub}</span>
             </div>
           ))}
+        </div>
+
+        <div className="rise-in mt-6 w-full max-w-md" style={{ animationDelay: "0.32s" }}>
+          <div className="mb-2 flex items-center justify-between font-mono text-[9px] tracking-[0.22em] text-slate-400">
+            <span>IDENTITÉS // SKINS</span>
+            <span>{SKINS.filter((skin) => best >= skin.unlock).length}/{SKINS.length} DÉBLOQUÉS</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {SKINS.map((skin) => {
+              const unlocked = best >= skin.unlock;
+              const active = selectedSkin === skin.id;
+              return (
+                <button key={skin.id} type="button" disabled={!unlocked} onClick={() => onSelectSkin(skin.id)}
+                  aria-label={unlocked ? `Choisir le skin ${skin.name}` : `Skin ${skin.name} verrouillé, record requis ${skin.unlock}`}
+                  className={`relative flex min-h-[62px] flex-col items-center justify-center gap-1 border px-2 py-2 font-mono transition-all ${active ? "border-cyan-300 bg-cyan-300/10 shadow-[0_0_14px_rgba(34,211,238,0.16)]" : "border-slate-700/70 bg-slate-950/60"} ${unlocked ? "opacity-100" : "cursor-not-allowed opacity-45"}`}>
+                  <span className="h-3 w-8 rounded-full" style={{ background: `linear-gradient(90deg, ${skin.dark}, ${skin.mid}, ${skin.bright})`, boxShadow: `0 0 10px ${skin.glow}` }} />
+                  <span className="text-[8px] font-bold tracking-[0.12em] text-slate-200">{skin.name}</span>
+                  <span className="text-[7px] tracking-[0.1em] text-slate-500">{unlocked ? (active ? "ÉQUIPÉ" : "DISPONIBLE") : `RECORD ${skin.unlock}`}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <button onClick={onStart} className="cyber-btn cyber-btn-primary rise-in mt-8 px-10 py-4 text-xs font-bold tracking-[0.3em] sm:px-14 sm:text-sm" style={{ animationDelay: "0.36s" }}>
