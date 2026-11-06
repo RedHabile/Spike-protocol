@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pause, Play, Volume2, VolumeX } from "lucide-react";
-import { GameEngine, type GameState, type GameStats } from "./game/engine";
+import { GameEngine, SKINS, type GameState, type GameStats, type SkinId } from "./game/engine";
 import { GameOverScreen, PauseScreen, StartScreen } from "./components/Screens";
 
 export default function App() {
@@ -10,6 +10,12 @@ export default function App() {
   const [stats, setStats] = useState<GameStats | null>(null);
   const [muted, setMuted] = useState(false);
   const [best, setBest] = useState(0);
+  const [selectedSkin, setSelectedSkin] = useState<SkinId>(() => {
+    try {
+      const saved = localStorage.getItem("spike-skin") as SkinId | null;
+      return SKINS.some((s) => s.id === saved) ? saved! : "classic";
+    } catch { return "classic"; }
+  });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -27,6 +33,7 @@ export default function App() {
       }
     });
     engineRef.current = engine;
+    engine.setSkin(selectedSkin);
     setMuted(engine.isMuted);
     try {
       setBest(Number(localStorage.getItem("spike-best") ?? 0) || 0);
@@ -41,6 +48,11 @@ export default function App() {
   }, []);
 
   const handleStart = useCallback(() => engineRef.current?.start(), []);
+  const handleSelectSkin = useCallback((id: SkinId) => {
+    setSelectedSkin(id);
+    engineRef.current?.setSkin(id);
+    try { localStorage.setItem("spike-skin", id); } catch { /* stockage indisponible */ }
+  }, []);
   const handleResume = useCallback(() => engineRef.current?.togglePause(), []);
   const handleQuit = useCallback(() => engineRef.current?.toMenu(), []);
   const handleMute = useCallback(() => {
@@ -93,7 +105,7 @@ export default function App() {
       </div>
 
       {/* Écrans */}
-      {uiState === "menu" && <StartScreen best={best} onStart={handleStart} />}
+      {uiState === "menu" && <StartScreen best={best} selectedSkin={selectedSkin} onSelectSkin={handleSelectSkin} onStart={handleStart} />}
       {uiState === "paused" && <PauseScreen onResume={handleResume} onQuit={handleQuit} />}
       {uiState === "gameover" && stats && <GameOverScreen stats={stats} onRestart={handleStart} onQuit={handleQuit} />}
     </div>
