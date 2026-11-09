@@ -1,12 +1,12 @@
 import { Award, Cpu, Diamond, Home, LockKeyhole, Play, RotateCcw, Timer, TriangleAlert, Zap } from "lucide-react";
 import { SKINS, type GameStats, type SkinId } from "../game/engine";
-import { ACHIEVEMENTS, DAILY_QUESTS, questComplete, type Profile, type QuestId } from "../game/progression";
+import { ACHIEVEMENTS, DAILY_QUESTS, levelForXp, xpForNextLevel, xpIntoLevel, type Profile, type QuestId } from "../game/progression";
 
 export function StartScreen({ best, selectedSkin, profile, countdown, onSelectSkin, onClaimQuest, onStart }: {
   best:number; selectedSkin:SkinId; profile:Profile; countdown:string;
   onSelectSkin:(id:SkinId)=>void; onClaimQuest:(id:QuestId)=>void; onStart:()=>void;
 }) {
-  const level=Math.floor(profile.xp/250)+1, xp=profile.xp%250;
+  const level=levelForXp(profile.xp), xp=xpIntoLevel(profile.xp), needed=xpForNextLevel(level);
   const activeQuests=DAILY_QUESTS.filter(q=>profile.quest.active.includes(q.id));
   return <div className="overlay-in absolute inset-0 z-30 overflow-y-auto bg-[#05070d]/90 px-4 py-8 backdrop-blur-[6px] sm:px-6">
     <div className="mx-auto flex w-full max-w-4xl flex-col items-center text-center">
@@ -19,8 +19,8 @@ export function StartScreen({ best, selectedSkin, profile, countdown, onSelectSk
         <div className="cyber-panel p-3"><span className="block font-mono text-[8px] text-slate-500">EXPÉRIENCE</span><strong className="font-display text-3xl text-slate-100">{profile.xp} XP</strong></div>
         <div className="cyber-panel p-3"><span className="block font-mono text-[8px] text-slate-500">CRÉDITS</span><strong className="font-display text-3xl text-amber-300">{profile.credits} ◆</strong></div>
       </div>
-      <div className="mt-2 h-2 w-full max-w-2xl overflow-hidden bg-slate-800"><div className="h-full bg-cyan-300 transition-all" style={{width:`${xp/250*100}%`}}/></div>
-      <div className="mt-1 flex w-full max-w-2xl justify-between font-mono text-[8px] text-slate-500"><span>{xp}/250 XP</span><span>{profile.unlockedSkins.length}/26 SKINS DÉBLOQUÉS</span></div>
+      <div className="mt-2 h-2 w-full max-w-2xl overflow-hidden bg-slate-800"><div className="h-full bg-cyan-300 transition-all" style={{width:`${Math.min(100,xp/needed*100)}%`}}/></div>
+      <div className="mt-1 flex w-full max-w-2xl justify-between font-mono text-[8px] text-slate-500"><span>{xp}/{needed} XP POUR LE NIVEAU {level+1}</span><span>{profile.unlockedSkins.length}/26 SKINS DÉBLOQUÉS</span></div>
       <button onClick={onStart} className="cyber-btn cyber-btn-primary mt-5 px-12 py-4 text-xs font-bold tracking-[0.3em]"><span className="inline-flex items-center gap-3"><Play className="h-4 w-4 fill-current"/>INITIALISER</span></button>
       <div className="mt-4 flex flex-wrap justify-center gap-5 font-mono text-[9px] tracking-[0.18em] text-slate-500"><span>RECORD <b className="text-amber-300">{best}</b></span><span>MISSIONS <b className="text-cyan-300">{profile.runs}</b></span><span>ÉCLATS <b className="text-cyan-300">{profile.totalShards}</b></span></div>
       <section className="mt-8 w-full text-left">
