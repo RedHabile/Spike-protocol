@@ -1,6 +1,6 @@
 import { Award, Cpu, Diamond, Home, LockKeyhole, Play, RotateCcw, Timer, TriangleAlert, Zap } from "lucide-react";
 import { SKINS, type GameStats, type SkinId } from "../game/engine";
-import { ACHIEVEMENTS, DAILY_QUESTS, levelForXp, xpForNextLevel, xpIntoLevel, type Profile, type QuestId } from "../game/progression";
+import { ACHIEVEMENTS, DAILY_QUESTS, questComplete, levelForXp, xpForNextLevel, xpIntoLevel, type Profile, type QuestId } from "../game/progression";
 
 export function StartScreen({ best, selectedSkin, profile, countdown, onSelectSkin, onClaimQuest, onStart }: {
   best:number; selectedSkin:SkinId; profile:Profile; countdown:string;
