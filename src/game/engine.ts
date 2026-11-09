@@ -769,6 +769,7 @@ export class GameEngine {
       maxSpeed: spd,
       level: this.level,
       rank: rankFor(this.score),
+      xpEarned: 0,
     };
     this.onState("gameover", stats);
   }
