@@ -1,11 +1,53 @@
-import { Award, Cpu, Diamond, Home, LockKeyhole, Play, RotateCcw, Timer, TriangleAlert, Zap } from "lucide-react";
+import { Award, Cpu, Diamond, Home, LockKeyhole, Play, RotateCcw, Timer, TriangleAlert, Zap, Trophy, X, RefreshCw, Globe } from "lucide-react";
+import { useState } from "react";
+import { getPlayerName, leaderboardConfigured, loadLeaderboard, savePlayerName, type LeaderboardEntry } from "../game/leaderboard";
 import { SKINS, type GameStats, type SkinId } from "../game/engine";
 import { ACHIEVEMENTS, DAILY_QUESTS, questComplete, levelForXp, xpForNextLevel, xpIntoLevel, type Profile, type QuestId } from "../game/progression";
+
+
+function LeaderboardPanel({onClose}:{onClose:()=>void}) {
+  const [entries,setEntries]=useState<LeaderboardEntry[]>([]);
+  const [name,setName]=useState(getPlayerName());
+  const [savedName,setSavedName]=useState(getPlayerName());
+  const [loading,setLoading]=useState(false);
+  const [error,setError]=useState("");
+  const [loaded,setLoaded]=useState(false);
+  const refresh=async()=>{setLoading(true);setError("");try{setEntries(await loadLeaderboard());setLoaded(true);}catch(e){setError(e instanceof Error?e.message:"Erreur de connexion.");}finally{setLoading(false);}};
+  const save=()=>{try{savePlayerName(name);setSavedName(name.trim().replace(/\s+/g," "));setError("");}catch(e){setError(e instanceof Error?e.message:"Pseudo invalide.");}};
+  return <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-3 backdrop-blur-md" role="dialog" aria-modal="true" aria-label="Classement mondial">
+    <div className="cyber-panel flex max-h-[88vh] w-full max-w-xl flex-col border-cyan-400/40 p-4 sm:p-6">
+      <div className="flex items-center justify-between border-b border-cyan-400/20 pb-3">
+        <div><div className="flex items-center gap-2 font-mono text-[9px] tracking-[0.3em] text-cyan-300"><Globe className="h-3.5 w-3.5"/>RÉSEAU GLOBAL</div><h2 className="mt-1 font-display text-2xl font-bold tracking-wider text-slate-100">CLASSEMENT MONDIAL</h2></div>
+        <button onClick={onClose} aria-label="Fermer" className="cyber-btn cyber-btn-ghost flex h-9 w-9 items-center justify-center"><X className="h-4 w-4"/></button>
+      </div>
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+        <input value={name} onChange={e=>setName(e.target.value)} maxLength={18} placeholder="Ton pseudo" className="min-w-0 flex-1 border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-xs text-slate-100 outline-none focus:border-cyan-300"/>
+        <button onClick={save} className="cyber-btn cyber-btn-primary px-4 py-2 font-mono text-[10px] tracking-wider">ENREGISTRER LE PSEUDO</button>
+      </div>
+      <p className="mt-1 font-mono text-[8px] text-slate-500">PSEUDO ACTUEL : {savedName}</p>
+      {!leaderboardConfigured&&<div className="mt-4 border border-amber-400/30 bg-amber-400/5 p-3 font-mono text-[10px] leading-relaxed text-amber-200">
+        <strong className="block tracking-wider">CONNEXION AU SERVEUR À CONFIGURER</strong>
+        Le tableau est prêt, mais il faut créer le projet Supabase et ajouter ses deux clés dans les variables GitHub Actions pour partager les scores entre joueurs.
+      </div>}
+      {leaderboardConfigured&&<button onClick={refresh} disabled={loading} className="cyber-btn cyber-btn-ghost mt-3 flex items-center justify-center gap-2 px-4 py-2 font-mono text-[10px] tracking-wider disabled:opacity-50"><RefreshCw className={\`h-3.5 w-3.5 \${loading?"animate-spin":""}\`}/>{loading?"SYNCHRONISATION...":"ACTUALISER LE CLASSEMENT"}</button>}
+      {error&&<p className="mt-2 font-mono text-[10px] text-rose-300">{error}</p>}
+      <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+        <div className="grid grid-cols-[2.5rem_1fr_5rem] gap-2 border-b border-slate-700 px-2 pb-2 font-mono text-[8px] tracking-widest text-slate-500"><span>RANG</span><span>OPÉRATEUR</span><span className="text-right">RECORD</span></div>
+        {entries.map((entry,index)=><div key={\`\${entry.player_name}-\${index}\`} className={\`grid grid-cols-[2.5rem_1fr_5rem] items-center gap-2 border-b border-slate-800/80 px-2 py-3 font-mono text-xs \${index===0?"bg-amber-300/5":""}\`}><span className={index<3?"text-amber-300":"text-slate-500"}>{String(index+1).padStart(2,"0")}</span><span className="truncate text-slate-200">{entry.player_name}</span><strong className="text-right text-cyan-300">{entry.best_score.toLocaleString("fr-FR")}</strong></div>)}
+        {leaderboardConfigured&&loaded&&entries.length===0&&<p className="py-8 text-center font-mono text-[10px] text-slate-500">AUCUN SCORE ENREGISTRÉ. SOIS LE PREMIER.</p>}
+        {!leaderboardConfigured&&<div className="py-8 text-center font-mono text-[10px] text-slate-600">EN ATTENTE DE LA CONNEXION AU RÉSEAU...</div>}
+        {leaderboardConfigured&&!loaded&&!loading&&<div className="py-8 text-center font-mono text-[10px] text-slate-500">Appuie sur actualiser pour récupérer les 100 meilleurs scores.</div>}
+      </div>
+      <p className="mt-3 border-t border-slate-800 pt-3 font-mono text-[8px] leading-relaxed text-slate-600">Chaque joueur possède un identifiant local. Seul son meilleur score est conservé dans le classement.</p>
+    </div>
+  </div>;
+}
 
 export function StartScreen({ best, selectedSkin, profile, countdown, onSelectSkin, onClaimQuest, onStart }: {
   best:number; selectedSkin:SkinId; profile:Profile; countdown:string;
   onSelectSkin:(id:SkinId)=>void; onClaimQuest:(id:QuestId)=>void; onStart:()=>void;
 }) {
+  const [showLeaderboard,setShowLeaderboard]=useState(false);
   const level=levelForXp(profile.xp), xp=xpIntoLevel(profile.xp), needed=xpForNextLevel(level);
   const activeQuests=DAILY_QUESTS.filter(q=>profile.quest.active.includes(q.id));
   return <div className="overlay-in absolute inset-0 z-30 overflow-y-auto bg-[#05070d]/90 px-4 py-8 backdrop-blur-[6px] sm:px-6">
@@ -21,7 +63,8 @@ export function StartScreen({ best, selectedSkin, profile, countdown, onSelectSk
       </div>
       <div className="mt-2 h-2 w-full max-w-2xl overflow-hidden bg-slate-800"><div className="h-full bg-cyan-300 transition-all" style={{width:`${Math.min(100,xp/needed*100)}%`}}/></div>
       <div className="mt-1 flex w-full max-w-2xl justify-between font-mono text-[8px] text-slate-500"><span>{xp}/{needed} XP POUR LE NIVEAU {level+1}</span><span>{profile.unlockedSkins.length}/26 SKINS DÉBLOQUÉS</span></div>
-      <button onClick={onStart} className="cyber-btn cyber-btn-primary mt-5 px-12 py-4 text-xs font-bold tracking-[0.3em]"><span className="inline-flex items-center gap-3"><Play className="h-4 w-4 fill-current"/>INITIALISER</span></button>
+      <div className="mt-5 flex w-full max-w-md flex-col gap-2 sm:flex-row"><button onClick={onStart} className="cyber-btn cyber-btn-primary flex-1 px-8 py-4 text-xs font-bold tracking-[0.3em]"><span className="inline-flex items-center justify-center gap-3"><Play className="h-4 w-4 fill-current"/>INITIALISER</span></button><button onClick={()=>setShowLeaderboard(true)} className="cyber-btn cyber-btn-ghost flex-1 px-5 py-4 text-xs font-bold tracking-[0.2em]"><span className="inline-flex items-center justify-center gap-2"><Trophy className="h-4 w-4 text-amber-300"/>CLASSEMENT</span></button></div>
+      {showLeaderboard&&<LeaderboardPanel onClose={()=>setShowLeaderboard(false)}/ >}
       <div className="mt-4 flex flex-wrap justify-center gap-5 font-mono text-[9px] tracking-[0.18em] text-slate-500"><span>RECORD <b className="text-amber-300">{best}</b></span><span>MISSIONS <b className="text-cyan-300">{profile.runs}</b></span><span>ÉCLATS <b className="text-cyan-300">{profile.totalShards}</b></span></div>
       <section className="mt-8 w-full text-left">
         <div className="mb-3 flex items-end justify-between"><div><h3 className="font-display text-xl font-bold tracking-[0.15em] text-slate-100">IDENTITÉS <span className="text-cyan-300">//</span> SKINS</h3><p className="font-mono text-[9px] text-slate-500">Débloquez des apparences en gagnant de l'XP ou des succès.</p></div><span className="font-mono text-[10px] text-cyan-300">{profile.unlockedSkins.length}/26</span></div>
