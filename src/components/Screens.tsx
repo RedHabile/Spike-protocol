@@ -1,185 +1,49 @@
-import { Cpu, Diamond, Home, Play, RotateCcw, Shield, Skull, Timer, TriangleAlert, Wind } from "lucide-react";
+import { Award, Cpu, Diamond, Home, LockKeyhole, Play, RotateCcw, Shield, Skull, Timer, TriangleAlert, Wind, Zap } from "lucide-react";
 import { SKINS, type GameStats, type SkinId } from "../game/engine";
+import { ACHIEVEMENTS, DAILY_QUESTS, questComplete, type Profile, type QuestId } from "../game/progression";
 
-/* ─── Écran d'accueil ─────────────────────────────────────────────── */
-
-export function StartScreen({ best, selectedSkin, onSelectSkin, onStart }: { best: number; selectedSkin: SkinId; onSelectSkin: (id: SkinId) => void; onStart: () => void }) {
-  return (
-    <div className="overlay-in absolute inset-0 z-30 flex items-center justify-center bg-[#05070d]/72 backdrop-blur-[6px]">
-      <div className="flex w-full max-w-3xl flex-col items-center px-6 text-center">
-        <div className="rise-in mb-5 flex items-center gap-2 font-mono text-[10px] tracking-[0.5em] text-cyan-300/70 sm:text-xs">
-          <Cpu className="h-3.5 w-3.5" />
-          <span>SYS.BRÈCHE // v2.0</span>
-          <span className="blink-caret">▮</span>
-        </div>
-
-        <h1
-          className="glitch rise-in font-display text-[13vw] leading-[0.9] font-bold tracking-tight text-slate-100 uppercase select-none sm:text-7xl md:text-8xl"
-          data-text="SPIKE"
-          style={{ animationDelay: "0.05s" }}
-        >
-          SPIKE
-        </h1>
-        <h1
-          className="glitch rise-in neon-text-cyan font-display text-[11vw] leading-[1.05] font-bold tracking-[0.08em] text-cyan-300 uppercase select-none sm:text-6xl md:text-7xl"
-          data-text="PROTOCOL"
-          style={{ animationDelay: "0.12s" }}
-        >
-          PROTOCOL
-        </h1>
-
-        <p className="rise-in mt-5 max-w-md font-mono text-[11px] leading-relaxed tracking-wide text-slate-400 sm:text-xs" style={{ animationDelay: "0.2s" }}>
-          Simulation de brèche murale. Pulsez entre les cloisons,
-          <br className="hidden sm:block" /> évitez les pointes, siphonnez les éclats de données.
-        </p>
-
-        <div className="rise-in mt-7 grid w-full max-w-md grid-cols-3 gap-2 sm:gap-3" style={{ animationDelay: "0.28s" }}>
-          {[
-            { icon: Wind, label: "CLIC / ESPACE", sub: "impulsion" },
-            { icon: Shield, label: "BONUS", sub: "bouclier · ralenti" },
-            { icon: Diamond, label: "ÉCLATS", sub: "+3 points" },
-          ].map((it) => (
-            <div key={it.label} className="cyber-panel flex flex-col items-center gap-1.5 px-2 py-3.5">
-              <it.icon className="h-4 w-4 text-cyan-300" />
-              <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-slate-200 sm:text-[10px]">{it.label}</span>
-              <span className="font-mono text-[8px] tracking-[0.1em] text-slate-500 uppercase sm:text-[9px]">{it.sub}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="rise-in mt-6 w-full max-w-md" style={{ animationDelay: "0.32s" }}>
-          <div className="mb-2 flex items-center justify-between font-mono text-[9px] tracking-[0.22em] text-slate-400">
-            <span>IDENTITÉS // SKINS</span>
-            <span>{SKINS.filter((skin) => best >= skin.unlock).length}/{SKINS.length} DÉBLOQUÉS</span>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {SKINS.map((skin) => {
-              const unlocked = best >= skin.unlock;
-              const active = selectedSkin === skin.id;
-              return (
-                <button key={skin.id} type="button" disabled={!unlocked} onClick={() => onSelectSkin(skin.id)}
-                  aria-label={unlocked ? `Choisir le skin ${skin.name}` : `Skin ${skin.name} verrouillé, record requis ${skin.unlock}`}
-                  className={`relative flex min-h-[62px] flex-col items-center justify-center gap-1 border px-2 py-2 font-mono transition-all ${active ? "border-cyan-300 bg-cyan-300/10 shadow-[0_0_14px_rgba(34,211,238,0.16)]" : "border-slate-700/70 bg-slate-950/60"} ${unlocked ? "opacity-100" : "cursor-not-allowed opacity-45"}`}>
-                  <span className="h-3 w-8 rounded-full" style={{ background: `linear-gradient(90deg, ${skin.dark}, ${skin.mid}, ${skin.bright})`, boxShadow: `0 0 10px ${skin.glow}` }} />
-                  <span className="text-[8px] font-bold tracking-[0.12em] text-slate-200">{skin.name}</span>
-                  <span className="text-[7px] tracking-[0.1em] text-slate-500">{unlocked ? (active ? "ÉQUIPÉ" : "DISPONIBLE") : `RECORD ${skin.unlock}`}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <button onClick={onStart} className="cyber-btn cyber-btn-primary rise-in mt-8 px-10 py-4 text-xs font-bold tracking-[0.3em] sm:px-14 sm:text-sm" style={{ animationDelay: "0.36s" }}>
-          <span className="inline-flex items-center gap-3">
-            <Play className="h-4 w-4 fill-current" />
-            INITIALISER
-          </span>
-        </button>
-
-        <div className="rise-in mt-6 flex items-center gap-6 font-mono text-[10px] tracking-[0.2em] text-slate-500" style={{ animationDelay: "0.44s" }}>
-          <span>
-            RECORD&nbsp;&nbsp;<span className="font-bold text-amber-300">{best}</span>
-          </span>
-          <span className="hidden sm:inline">ENTRÉE ↵ POUR DÉMARRER</span>
-        </div>
+export function StartScreen({ best, selectedSkin, profile, countdown, onSelectSkin, onClaimQuest, onStart }: {
+  best:number; selectedSkin:SkinId; profile:Profile; countdown:string;
+  onSelectSkin:(id:SkinId)=>void; onClaimQuest:(id:QuestId)=>void; onStart:()=>void;
+}) {
+  const level=Math.floor(profile.xp/250)+1, xp=profile.xp%250;
+  const activeQuests=DAILY_QUESTS.filter(q=>profile.quest.active.includes(q.id));
+  return <div className="overlay-in absolute inset-0 z-30 overflow-y-auto bg-[#05070d]/90 px-4 py-8 backdrop-blur-[6px] sm:px-6">
+    <div className="mx-auto flex w-full max-w-4xl flex-col items-center text-center">
+      <div className="mb-3 flex items-center gap-2 font-mono text-[10px] tracking-[0.5em] text-cyan-300/70"><Cpu className="h-3.5 w-3.5"/><span>SYS.BRÈCHE // v3.0</span><span className="blink-caret">▮</span></div>
+      <h1 className="glitch font-display text-[13vw] leading-[0.9] font-bold tracking-tight text-slate-100 uppercase sm:text-7xl md:text-8xl" data-text="SPIKE">SPIKE</h1>
+      <h2 className="glitch neon-text-cyan font-display text-[10vw] leading-[1.05] font-bold tracking-[0.08em] text-cyan-300 uppercase sm:text-6xl" data-text="PROTOCOL">PROTOCOL</h2>
+      <p className="mt-3 max-w-md font-mono text-[10px] leading-relaxed tracking-wide text-slate-400 sm:text-xs">Survivez aux pointes. Collectez les éclats. Faites évoluer votre opérateur.</p>
+      <div className="mt-5 grid w-full max-w-2xl grid-cols-3 gap-2">
+        <div className="cyber-panel p-3"><span className="block font-mono text-[8px] text-slate-500">NIVEAU</span><strong className="font-display text-3xl text-cyan-300">{level}</strong></div>
+        <div className="cyber-panel p-3"><span className="block font-mono text-[8px] text-slate-500">EXPÉRIENCE</span><strong className="font-display text-3xl text-slate-100">{profile.xp} XP</strong></div>
+        <div className="cyber-panel p-3"><span className="block font-mono text-[8px] text-slate-500">CRÉDITS</span><strong className="font-display text-3xl text-amber-300">{profile.credits} ◆</strong></div>
       </div>
+      <div className="mt-2 h-2 w-full max-w-2xl overflow-hidden bg-slate-800"><div className="h-full bg-cyan-300 transition-all" style={{width:`${xp/250*100}%`}}/></div>
+      <div className="mt-1 flex w-full max-w-2xl justify-between font-mono text-[8px] text-slate-500"><span>{xp}/250 XP</span><span>{profile.unlockedSkins.length}/26 SKINS DÉBLOQUÉS</span></div>
+      <button onClick={onStart} className="cyber-btn cyber-btn-primary mt-5 px-12 py-4 text-xs font-bold tracking-[0.3em]"><span className="inline-flex items-center gap-3"><Play className="h-4 w-4 fill-current"/>INITIALISER</span></button>
+      <div className="mt-4 flex flex-wrap justify-center gap-5 font-mono text-[9px] tracking-[0.18em] text-slate-500"><span>RECORD <b className="text-amber-300">{best}</b></span><span>MISSIONS <b className="text-cyan-300">{profile.runs}</b></span><span>ÉCLATS <b className="text-cyan-300">{profile.totalShards}</b></span></div>
+      <section className="mt-8 w-full text-left">
+        <div className="mb-3 flex items-end justify-between"><div><h3 className="font-display text-xl font-bold tracking-[0.15em] text-slate-100">IDENTITÉS <span className="text-cyan-300">//</span> SKINS</h3><p className="font-mono text-[9px] text-slate-500">Débloquez des apparences en gagnant de l'XP ou des succès.</p></div><span className="font-mono text-[10px] text-cyan-300">{profile.unlockedSkins.length}/26</span></div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-5">
+          {SKINS.map(skin=>{const unlocked=profile.unlockedSkins.includes(skin.id),active=selectedSkin===skin.id,achievement=ACHIEVEMENTS.find(a=>a.skin===skin.id);return <button key={skin.id} type="button" disabled={!unlocked} onClick={()=>onSelectSkin(skin.id)} className={`relative flex min-h-[82px] flex-col items-center justify-center gap-1 border px-2 py-2 font-mono transition-all ${active?"border-cyan-300 bg-cyan-300/10 shadow-[0_0_14px_rgba(34,211,238,0.16)]":"border-slate-700/70 bg-slate-950/70"} ${unlocked?"opacity-100":"cursor-not-allowed opacity-50"}`}>
+            <span className="h-3 w-12 rounded-full" style={{background:`linear-gradient(90deg,${skin.dark},${skin.mid},${skin.bright})`,boxShadow:`0 0 12px ${skin.glow}`}}/>
+            <span className="text-[9px] font-bold tracking-[0.1em] text-slate-200">{skin.name}</span>
+            <span className="inline-flex items-center gap-1 text-[7px] text-slate-500">{active?"ÉQUIPÉ":unlocked?"DISPONIBLE":achievement?<><LockKeyhole className="h-2.5 w-2.5"/>SUCCÈS</>:<><LockKeyhole className="h-2.5 w-2.5"/>NIVEAU {skin.unlock}</>}</span>
+          </button>})}
+        </div>
+      </section>
+      <section className="mt-8 w-full text-left">
+        <div className="mb-3 flex items-end justify-between"><div><h3 className="font-display text-xl font-bold tracking-[0.15em] text-slate-100">MISSIONS QUOTIDIENNES <span className="text-cyan-300">//</span></h3><p className="font-mono text-[9px] text-slate-500">3 contrats renouvelés toutes les 24 heures.</p></div><div className="text-right"><span className="block font-mono text-[8px] text-slate-500">RENOUVELLEMENT</span><b className="font-mono text-xs text-amber-300">{countdown}</b></div></div>
+        <div className="grid gap-2 md:grid-cols-3">{activeQuests.map(q=>{const value=profile.quest.progress[q.id],complete=questComplete(profile,q.id),claimed=profile.quest.claimed.includes(q.id);return <div key={q.id} className="cyber-panel p-3"><div className="flex items-center justify-between"><strong className="font-mono text-[10px] tracking-wider text-slate-200">{q.title}</strong><Diamond className="h-3.5 w-3.5 text-amber-300"/></div><p className="mt-1 min-h-8 font-mono text-[9px] text-slate-500">{q.description}</p><div className="mt-2 h-1.5 bg-slate-800"><div className="h-full bg-cyan-300" style={{width:`${Math.min(100,value/q.target*100)}%`}}/></div><div className="mt-2 flex items-center justify-between"><span className="font-mono text-[8px] text-slate-400">{Math.min(value,q.target)}/{q.target} · +{q.reward} ◆</span><button disabled={!complete||claimed} onClick={()=>onClaimQuest(q.id)} className="border border-cyan-400/40 px-2 py-1 font-mono text-[8px] text-cyan-200 disabled:opacity-30">{claimed?"RÉCUPÉRÉ":complete?"RÉCUPÉRER":"EN COURS"}</button></div></div>})}</div>
+      </section>
+      <section className="mt-8 mb-8 w-full text-left">
+        <div className="mb-3 flex items-end justify-between"><div><h3 className="font-display text-xl font-bold tracking-[0.15em] text-slate-100">SUCCÈS <span className="text-cyan-300">//</span></h3><p className="font-mono text-[9px] text-slate-500">Défis permanents, récompensés par des skins rares.</p></div><span className="font-mono text-[10px] text-amber-300">{profile.unlockedAchievements.length}/{ACHIEVEMENTS.length}</span></div>
+        <div className="grid gap-2 sm:grid-cols-2">{ACHIEVEMENTS.map(a=>{const unlocked=profile.unlockedAchievements.includes(a.id);return <div key={a.id} className="flex items-center gap-3 border border-slate-700/60 bg-slate-950/60 p-3"><Award className={`h-5 w-5 shrink-0 ${unlocked?"text-amber-300":"text-slate-600"}`}/><div className="min-w-0 flex-1"><strong className="block font-mono text-[9px] text-slate-200">{a.title}</strong><span className="block font-mono text-[8px] text-slate-500">{a.description}</span></div><span className="font-mono text-[7px] text-cyan-300">{unlocked?"OBTENU":`SKIN ${a.skin.toUpperCase()}`}</span></div>})}</div>
+      </section>
     </div>
-  );
+  </div>;
 }
-
-/* ─── Écran de pause ──────────────────────────────────────────────── */
-
-export function PauseScreen({ onResume, onQuit }: { onResume: () => void; onQuit: () => void }) {
-  return (
-    <div className="overlay-in absolute inset-0 z-30 flex items-center justify-center bg-[#05070d]/68 backdrop-blur-[5px]">
-      <div className="cyber-panel flex w-[86vw] max-w-sm flex-col items-center px-8 py-9 text-center">
-        <Timer className="pulse-glow mb-4 h-6 w-6 text-cyan-300" />
-        <h2 className="font-display text-2xl font-bold tracking-[0.12em] text-slate-100 uppercase">Exécution suspendue</h2>
-        <p className="mt-2 font-mono text-[10px] tracking-[0.2em] text-slate-500">THREAD.ÉTAT = VEILLE</p>
-
-        <button onClick={onResume} className="cyber-btn cyber-btn-primary mt-7 w-full px-6 py-3.5 text-xs font-bold tracking-[0.28em]">
-          <span className="inline-flex items-center gap-2.5">
-            <Play className="h-4 w-4 fill-current" /> REPRENDRE
-          </span>
-        </button>
-        <button onClick={onQuit} className="cyber-btn cyber-btn-ghost mt-3 w-full px-6 py-3 text-xs font-bold tracking-[0.28em]">
-          <span className="inline-flex items-center gap-2.5">
-            <Home className="h-4 w-4" /> MENU PRINCIPAL
-          </span>
-        </button>
-        <p className="mt-5 font-mono text-[9px] tracking-[0.2em] text-slate-600">ÉCHAP / P — REPRISE RAPIDE</p>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Écran de fin ────────────────────────────────────────────────── */
-
-function StatCell({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div className="flex flex-col items-center gap-0.5 border border-slate-400/10 bg-slate-900/40 px-1 py-2.5">
-      <span className={`font-display text-lg leading-none font-bold sm:text-xl ${accent ? "neon-text-cyan text-cyan-300" : "text-slate-200"}`}>{value}</span>
-      <span className="font-mono text-[8px] tracking-[0.18em] text-slate-500 uppercase">{label}</span>
-    </div>
-  );
-}
-
-export function GameOverScreen({ stats, onRestart, onQuit }: { stats: GameStats; onRestart: () => void; onQuit: () => void }) {
-  return (
-    <div className="overlay-in absolute inset-0 z-30 flex items-center justify-center bg-[#0d0509]/72 backdrop-blur-[6px]">
-      <div className="flex w-[90vw] max-w-md flex-col items-center px-2 text-center">
-        <div className="rise-in flex items-center gap-2 font-mono text-[10px] tracking-[0.4em] text-rose-400/80">
-          <TriangleAlert className="h-3.5 w-3.5" />
-          <span>INTEGRITÉ 0%</span>
-        </div>
-
-        <h2 className="glitch neon-text-pink rise-in mt-3 font-display text-5xl font-bold tracking-[0.06em] text-rose-400 uppercase sm:text-6xl" data-text="SIGNAL PERDU" style={{ animationDelay: "0.08s" }}>
-          SIGNAL PERDU
-        </h2>
-
-        {stats.newBest && (
-          <div className="rise-in mt-4 border border-amber-300/40 bg-amber-300/10 px-4 py-1.5 font-mono text-[10px] font-bold tracking-[0.3em] text-amber-300" style={{ animationDelay: "0.16s" }}>
-            ◆ NOUVEAU RECORD ◆
-          </div>
-        )}
-
-        <div className="rise-in mt-6" style={{ animationDelay: "0.2s" }}>
-          <div className="font-mono text-[9px] tracking-[0.4em] text-slate-500">SCORE FINAL</div>
-          <div className="neon-text-cyan font-display text-7xl leading-none font-bold text-cyan-300 sm:text-8xl">{stats.score}</div>
-        </div>
-
-        <div className="cyber-panel rise-in mt-6 grid w-full grid-cols-4 gap-1.5 p-3" style={{ animationDelay: "0.28s" }}>
-          <StatCell label="Record" value={String(stats.best)} />
-          <StatCell label="Éclats" value={String(stats.shards)} />
-          <StatCell label="Temps" value={`${stats.time.toFixed(1)}s`} />
-          <StatCell label="V.max" value={String(stats.maxSpeed)} />
-        </div>
-
-        <div className="rise-in mt-4 flex items-center gap-2.5 font-mono text-[10px] tracking-[0.26em]" style={{ animationDelay: "0.34s" }}>
-          <Skull className="h-3.5 w-3.5 text-fuchsia-400" />
-          <span className="text-slate-500">RANG&nbsp;:</span>
-          <span className="font-bold text-fuchsia-300">{stats.rank}</span>
-          <span className="text-slate-700">/</span>
-          <span className="text-slate-500">MENACE NV.{stats.level}</span>
-        </div>
-
-        <div className="rise-in mt-7 flex w-full flex-col gap-3 sm:flex-row" style={{ animationDelay: "0.4s" }}>
-          <button onClick={onRestart} className="cyber-btn cyber-btn-primary flex-1 px-6 py-3.5 text-xs font-bold tracking-[0.26em]">
-            <span className="inline-flex items-center gap-2.5">
-              <RotateCcw className="h-4 w-4" /> RÉINITIALISER
-            </span>
-          </button>
-          <button onClick={onQuit} className="cyber-btn cyber-btn-ghost px-6 py-3 text-xs font-bold tracking-[0.26em]">
-            <span className="inline-flex items-center gap-2.5">
-              <Home className="h-4 w-4" /> MENU
-            </span>
-          </button>
-        </div>
-
-        <p className="rise-in mt-5 font-mono text-[9px] tracking-[0.2em] text-slate-600" style={{ animationDelay: "0.46s" }}>
-          ENTRÉE ↵ — RELANCE RAPIDE
-        </p>
-      </div>
-    </div>
-  );
-}
+export function PauseScreen({onResume,onQuit}:{onResume:()=>void;onQuit:()=>void}){return <div className="overlay-in absolute inset-0 z-30 flex items-center justify-center bg-[#05070d]/68 backdrop-blur-[5px]"><div className="cyber-panel flex w-[86vw] max-w-sm flex-col items-center px-8 py-9 text-center"><Timer className="pulse-glow mb-4 h-6 w-6 text-cyan-300"/><h2 className="font-display text-2xl font-bold tracking-[0.12em] text-slate-100 uppercase">Exécution suspendue</h2><p className="mt-2 font-mono text-[10px] tracking-[0.2em] text-slate-500">THREAD.ÉTAT = VEILLE</p><button onClick={onResume} className="cyber-btn cyber-btn-primary mt-7 w-full px-6 py-3.5 text-xs font-bold tracking-[0.28em]"><span className="inline-flex items-center gap-2.5"><Play className="h-4 w-4 fill-current"/>REPRENDRE</span></button><button onClick={onQuit} className="cyber-btn cyber-btn-ghost mt-3 w-full px-6 py-3 text-xs font-bold tracking-[0.28em]"><span className="inline-flex items-center gap-2.5"><Home className="h-4 w-4"/>MENU PRINCIPAL</span></button><p className="mt-5 font-mono text-[9px] tracking-[0.2em] text-slate-600">ÉCHAP / P — REPRISE RAPIDE</p></div></div>}
+function StatCell({label,value,accent}:{label:string;value:string;accent?:boolean}){return <div className="flex flex-col items-center gap-0.5 border border-slate-400/10 bg-slate-900/40 px-1 py-2.5"><span className={`font-display text-lg leading-none font-bold sm:text-xl ${accent?"neon-text-cyan text-cyan-300":"text-slate-200"}`}>{value}</span><span className="font-mono text-[8px] tracking-[0.18em] text-slate-500 uppercase">{label}</span></div>}
+export function GameOverScreen({stats,onRestart,onQuit}:{stats:GameStats;onRestart:()=>void;onQuit:()=>void}){return <div className="overlay-in absolute inset-0 z-30 flex items-center justify-center overflow-y-auto bg-[#0d0509]/85 px-3 py-6 backdrop-blur-[6px]"><div className="flex w-[90vw] max-w-md flex-col items-center text-center"><div className="flex items-center gap-2 font-mono text-[10px] tracking-[0.4em] text-rose-400/80"><TriangleAlert className="h-3.5 w-3.5"/><span>INTEGRITÉ 0%</span></div><h2 className="glitch neon-text-pink mt-3 font-display text-5xl font-bold tracking-[0.06em] text-rose-400 uppercase sm:text-6xl" data-text="SIGNAL PERDU">SIGNAL PERDU</h2>{stats.newBest&&<div className="mt-4 border border-amber-300/40 bg-amber-300/10 px-4 py-1.5 font-mono text-[10px] font-bold tracking-[0.3em] text-amber-300">◆ NOUVEAU RECORD ◆</div>}<div className="mt-5"><div className="font-mono text-[9px] tracking-[0.4em] text-slate-500">SCORE FINAL</div><div className="neon-text-cyan font-display text-7xl leading-none font-bold text-cyan-300 sm:text-8xl">{stats.score}</div></div><div className="cyber-panel mt-5 grid w-full grid-cols-4 gap-1.5 p-3"><StatCell label="Record" value={String(stats.best)}/><StatCell label="Éclats" value={String(stats.shards)}/><StatCell label="Temps" value={`${stats.time.toFixed(1)}s`}/><StatCell label="V.max" value={String(stats.maxSpeed)}/></div><div className="mt-4 flex items-center gap-2 font-mono text-[11px] text-cyan-200"><Zap className="h-4 w-4"/>+{stats.xpEarned} XP GAGNÉS</div><div className="mt-7 flex w-full flex-col gap-3 sm:flex-row"><button onClick={onRestart} className="cyber-btn cyber-btn-primary flex-1 px-6 py-3.5 text-xs font-bold tracking-[0.26em]"><span className="inline-flex items-center gap-2.5"><RotateCcw className="h-4 w-4"/>RÉINITIALISER</span></button><button onClick={onQuit} className="cyber-btn cyber-btn-ghost px-6 py-3 text-xs font-bold tracking-[0.26em]"><span className="inline-flex items-center gap-2.5"><Home className="h-4 w-4"/>MENU</span></button></div><p className="mt-5 font-mono text-[9px] tracking-[0.2em] text-slate-600">ENTRÉE ↵ — RELANCE RAPIDE</p></div></div>}
