@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { GameEngine, type GameState, type GameStats, type SkinId } from "./game/engine";
 import { GameOverScreen, PauseScreen, StartScreen } from "./components/Screens";
-import { claimQuest, ensureDaily, loadProfile, questComplete, recordRun, remaining, saveProfile, type Profile, type QuestId } from "./game/progression";
+import { claimQuest, ensureDaily, loadProfile, recordRun, remaining, saveProfile, type Profile, type QuestId } from "./game/progression";
 
 function formatCountdown(ms:number){const h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000);return [h,m,s].map(v=>String(v).padStart(2,"0")).join(":");}
 export default function App(){
