@@ -1,4 +1,4 @@
-import { Award, Cpu, Diamond, Home, LockKeyhole, Play, RotateCcw, Shield, Skull, Timer, TriangleAlert, Wind, Zap } from "lucide-react";
+import { Award, Cpu, Diamond, Home, LockKeyhole, Play, RotateCcw, Timer, TriangleAlert, Zap } from "lucide-react";
 import { SKINS, type GameStats, type SkinId } from "../game/engine";
 import { ACHIEVEMENTS, DAILY_QUESTS, questComplete, type Profile, type QuestId } from "../game/progression";
 
