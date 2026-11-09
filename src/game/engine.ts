@@ -11,19 +11,39 @@ export interface GameStats {
   maxSpeed: number;
   level: number;
   rank: string;
+  xpEarned: number;
 }
 
 type PowerType = "shield" | "slowmo" | "magnet";
 
-export type SkinId = "classic" | "plasma" | "toxic" | "sunset" | "ice" | "void";
-export const SKINS: { id: SkinId; name: string; unlock: number; bright: string; mid: string; dark: string; glow: string }[] = [
-  { id: "classic", name: "CYAN CORE", unlock: 0, bright: "#ffffff", mid: "#a5f3fc", dark: "#0891b2", glow: "#22d3ee" },
-  { id: "plasma", name: "PLASMA", unlock: 10, bright: "#ffffff", mid: "#f0abfc", dark: "#a21caf", glow: "#e879f9" },
-  { id: "toxic", name: "TOXIC", unlock: 25, bright: "#f7fee7", mid: "#bef264", dark: "#4d7c0f", glow: "#a3e635" },
-  { id: "sunset", name: "SUNSET", unlock: 50, bright: "#fff7ed", mid: "#fdba74", dark: "#c2410c", glow: "#fb923c" },
-  { id: "ice", name: "ICE", unlock: 75, bright: "#ffffff", mid: "#bfdbfe", dark: "#2563eb", glow: "#60a5fa" },
-  { id: "void", name: "VOID", unlock: 100, bright: "#f5f3ff", mid: "#c4b5fd", dark: "#6d28d9", glow: "#a78bfa" },
-];
+export type SkinId = "classic"|"plasma"|"toxic"|"sunset"|"ice"|"void"|"cobalt"|"crimson"|"sandstorm"|"digital"|"carbon"|"royal"|"hazard"|"aurora"|"obsidian"|"titan"|"eclipse"|"inferno"|"overdrive"|"apex"|"warborn"|"headhunter"|"immortal"|"vanguard"|"overlord"|"spectral";
+export const SKINS:{id:SkinId;name:string;unlock:number;bright:string;mid:string;dark:string;glow:string}[]=[
+{id:"classic",name:"CYAN CORE",unlock:1,bright:"#fff",mid:"#a5f3fc",dark:"#0891b2",glow:"#22d3ee"},
+{id:"plasma",name:"PLASMA",unlock:2,bright:"#fff",mid:"#f0abfc",dark:"#a21caf",glow:"#e879f9"},
+{id:"toxic",name:"TOXIC",unlock:3,bright:"#f7fee7",mid:"#bef264",dark:"#4d7c0f",glow:"#a3e635"},
+{id:"sunset",name:"SUNSET",unlock:4,bright:"#fff7ed",mid:"#fdba74",dark:"#c2410c",glow:"#fb923c"},
+{id:"ice",name:"ICE",unlock:5,bright:"#fff",mid:"#bfdbfe",dark:"#2563eb",glow:"#60a5fa"},
+{id:"void",name:"VOID",unlock:6,bright:"#f5f3ff",mid:"#c4b5fd",dark:"#6d28d9",glow:"#a78bfa"},
+{id:"cobalt",name:"COBALT",unlock:7,bright:"#dbeafe",mid:"#60a5fa",dark:"#1e40af",glow:"#3b82f6"},
+{id:"crimson",name:"CRIMSON",unlock:8,bright:"#ffe4e6",mid:"#fb7185",dark:"#881337",glow:"#f43f5e"},
+{id:"sandstorm",name:"SANDSTORM",unlock:9,bright:"#fff7d6",mid:"#d6bd8b",dark:"#78613e",glow:"#eabf67"},
+{id:"digital",name:"DIGITAL CAMO",unlock:10,bright:"#e0f2fe",mid:"#22d3ee",dark:"#164e63",glow:"#06b6d4"},
+{id:"carbon",name:"CARBON",unlock:11,bright:"#f5f5f5",mid:"#737373",dark:"#171717",glow:"#a3a3a3"},
+{id:"royal",name:"ROYAL",unlock:12,bright:"#f3e8ff",mid:"#c084fc",dark:"#581c87",glow:"#a855f7"},
+{id:"hazard",name:"HAZARD",unlock:13,bright:"#fef9c3",mid:"#facc15",dark:"#713f12",glow:"#eab308"},
+{id:"aurora",name:"AURORA",unlock:14,bright:"#ccfbf1",mid:"#5eead4",dark:"#115e59",glow:"#2dd4bf"},
+{id:"obsidian",name:"OBSIDIAN",unlock:15,bright:"#ede9fe",mid:"#8b5cf6",dark:"#181025",glow:"#7c3aed"},
+{id:"titan",name:"TITAN",unlock:16,bright:"#e0f2fe",mid:"#94a3b8",dark:"#334155",glow:"#64748b"},
+{id:"eclipse",name:"ECLIPSE",unlock:17,bright:"#fef3c7",mid:"#f59e0b",dark:"#111827",glow:"#fbbf24"},
+{id:"inferno",name:"INFERNO",unlock:18,bright:"#ffedd5",mid:"#f97316",dark:"#7c2d12",glow:"#ea580c"},
+{id:"overdrive",name:"OVERDRIVE",unlock:19,bright:"#ecfccb",mid:"#84cc16",dark:"#365314",glow:"#a3e635"},
+{id:"apex",name:"APEX",unlock:20,bright:"#fef3c7",mid:"#fbbf24",dark:"#713f12",glow:"#f59e0b"},
+{id:"warborn",name:"WARBORN",unlock:0,bright:"#ffedd5",mid:"#f59e0b",dark:"#78350f",glow:"#d97706"},
+{id:"headhunter",name:"HEADHUNTER",unlock:0,bright:"#ffe4e6",mid:"#fb7185",dark:"#4c0519",glow:"#e11d48"},
+{id:"immortal",name:"IMMORTAL",unlock:0,bright:"#ecfeff",mid:"#22d3ee",dark:"#164e63",glow:"#0891b2"},
+{id:"vanguard",name:"VANGUARD",unlock:0,bright:"#d9f99d",mid:"#4ade80",dark:"#14532d",glow:"#16a34a"},
+{id:"overlord",name:"OVERLORD",unlock:0,bright:"#fee2e2",mid:"#dc2626",dark:"#450a0a",glow:"#b91c1c"},
+{id:"spectral",name:"SPECTRAL",unlock:0,bright:"#ecfeff",mid:"#67e8f9",dark:"#164e63",glow:"#06b6d4"}];
 
 interface Spike {
   cy: number;
