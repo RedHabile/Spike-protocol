@@ -26,7 +26,7 @@ function playerId(): string {
 
 export function getPlayerName(): string {
   try {
-    return localStorage.getItem(STORAGE_NAME) || \`OPÉRATEUR-\${playerId().slice(0, 4).toUpperCase()}\`;
+    return localStorage.getItem(STORAGE_NAME) || `OPÉRATEUR-${playerId().slice(0, 4).toUpperCase()}`;
   } catch {
     return "OPÉRATEUR";
   }
@@ -40,11 +40,11 @@ export function savePlayerName(name: string): void {
 
 function headers() {
   if (!url || !key) throw new Error("Classement non configuré.");
-  return { apikey: key, Authorization: \`Bearer \${key}\`, "Content-Type": "application/json" };
+  return { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
 }
 
 export async function loadLeaderboard(): Promise<LeaderboardEntry[]> {
-  const response = await fetch(\`\${url}/rest/v1/leaderboard?select=player_name,best_score,updated_at&order=best_score.desc&limit=100\`, {
+  const response = await fetch(`${url}/rest/v1/leaderboard?select=player_name,best_score,updated_at&order=best_score.desc&limit=100`, {
     headers: headers(),
   });
   if (!response.ok) throw new Error("Impossible de charger le classement.");
@@ -53,7 +53,7 @@ export async function loadLeaderboard(): Promise<LeaderboardEntry[]> {
 
 export async function submitBestScore(score: number): Promise<void> {
   if (!leaderboardConfigured || !Number.isFinite(score) || score <= 0) return;
-  const response = await fetch(\`\${url}/rest/v1/rpc/submit_spike_score\`, {
+  const response = await fetch(`${url}/rest/v1/rpc/submit_spike_score`, {
     method: "POST",
     headers: headers(),
     body: JSON.stringify({
