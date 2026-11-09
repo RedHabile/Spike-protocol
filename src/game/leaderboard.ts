@@ -2,8 +2,9 @@ export interface LeaderboardEntry { player_name: string; best_score: number; upd
 
 const STORAGE_ID = "spike-player-id";
 const STORAGE_NAME = "spike-player-name";
-const url = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/$/, "");
-const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+const env = (import.meta as ImportMeta & { env: { VITE_SUPABASE_URL?: string; VITE_SUPABASE_ANON_KEY?: string } }).env;
+const url = env.VITE_SUPABASE_URL?.replace(/\/$/, "");
+const key = env.VITE_SUPABASE_ANON_KEY;
 export const leaderboardConfigured = Boolean(url && key);
 
 function playerId(): string {
