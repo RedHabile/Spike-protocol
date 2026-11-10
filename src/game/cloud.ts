@@ -80,7 +80,7 @@ export async function signUp(email: string, password: string): Promise<SignUpRes
 
 export async function signOut(): Promise<void> {
   const session = readSession();
-  try { if (session) await fetch(`${PROJECT_URL}/auth/v1/logout`, { method:"POST", headers:headers(session.access_token) }); }
+  try { if (session) await fetch(`${PROJECT_URL}/auth/v1/logout`, { method:"POST", headers:headers(session.access_token) }); } catch { /* la session locale doit aussi pouvoir être fermée hors ligne */ }
   finally { clearSession(); }
 }
 
