@@ -24,7 +24,8 @@ export default function App(){
  },[]);
  const handleStart=useCallback(()=>engineRef.current?.start(),[]);
  const handleSelectSkin=useCallback((id:SkinId)=>{if(!profileRef.current.unlockedSkins.includes(id))return;const next={...profileRef.current,equippedSkin:id};updateProfile(next);engineRef.current?.setSkin(id);},[]);
- const handleBuySkin=useCallback((id:SkinId)=>{const next=buyShopSkin(profileRef.current,id);if(next!==profileRef.current)updateProfile(next);},[]);\n const handleClaim=useCallback((id:QuestId)=>{const next=claimQuest(profileRef.current,id);updateProfile(next);},[]);
+ const handleBuySkin=useCallback((id:SkinId)=>{const next=buyShopSkin(profileRef.current,id);if(next!==profileRef.current)updateProfile(next);},[]);
+ const handleClaim=useCallback((id:QuestId)=>{const next=claimQuest(profileRef.current,id);updateProfile(next);},[]);
  const handleResume=useCallback(()=>engineRef.current?.togglePause(),[]);
  const handleQuit=useCallback(()=>engineRef.current?.toMenu(),[]);
  const handleMute=useCallback(()=>{const m=engineRef.current?.toggleMute();if(m!==undefined)setMuted(m);},[]);
