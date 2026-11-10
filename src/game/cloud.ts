@@ -6,7 +6,7 @@ const SESSION_KEY = "spike-auth-session";
 
 export interface AuthUser { id: string; email?: string; }
 interface AuthSession { access_token: string; refresh_token: string; expires_at: number; }
-interface AuthResponse { access_token?: string; refresh_token?: string; expires_in?: number; expires_at?: number; user?: AuthUser; }
+interface AuthResponse { access_token?: string; refresh_token?: string; expires_in?: number; expires_at?: number; user?: AuthUser; id?: string; email?: string; }
 export interface SignUpResult { user: AuthUser; needsEmailConfirmation: boolean; }
 
 function readSession(): AuthSession | null {
@@ -74,8 +74,11 @@ export async function signUp(email: string, password: string): Promise<SignUpRes
   if (!response.ok) throw await responseError(response);
   const data = await response.json() as AuthResponse;
   if (data.access_token && data.refresh_token) storeSession(data);
-  if (!data.user) throw new Error("Le compte n'a pas pu être créé.");
-  return { user:data.user, needsEmailConfirmation:!data.access_token };
+  // Supabase REST /signup can return the user fields at the top level,
+  // rather than wrapping them in a "user" property.
+  const user = data.user || (data.id ? { id:data.id, email:data.email } : null);
+  if (!user) throw new Error("Réponse inattendue de Supabase. Réessaie dans quelques instants.");
+  return { user, needsEmailConfirmation:!data.access_token };
 }
 
 export async function signOut(): Promise<void> {
