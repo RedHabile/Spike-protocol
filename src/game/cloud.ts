@@ -81,6 +81,15 @@ export async function signUp(email: string, password: string): Promise<SignUpRes
   return { user, needsEmailConfirmation:!data.access_token };
 }
 
+
+export async function resendConfirmationEmail(email: string): Promise<void> {
+  const response = await fetch(`${PROJECT_URL}/auth/v1/resend`, {
+    method:"POST", headers:headers(),
+    body:JSON.stringify({ type:"signup", email:email.trim(), options:{ emailRedirectTo:"https://redhabile.github.io/Spike-protocol/" } }),
+  });
+  if (!response.ok) throw await responseError(response);
+}
+
 export async function signOut(): Promise<void> {
   const session = readSession();
   try { if (session) await fetch(`${PROJECT_URL}/auth/v1/logout`, { method:"POST", headers:headers(session.access_token) }); } catch { /* la session locale doit aussi pouvoir être fermée hors ligne */ }
