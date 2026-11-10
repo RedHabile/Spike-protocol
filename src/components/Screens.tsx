@@ -48,6 +48,9 @@ export function StartScreen({ best, selectedSkin, profile, countdown, onSelectSk
   onSelectSkin:(id:SkinId)=>void; onClaimQuest:(id:QuestId)=>void; onStart:()=>void;
 }) {
   const [showLeaderboard,setShowLeaderboard]=useState(false);
+  const [playerName,setPlayerName]=useState(()=>{try{return localStorage.getItem("spike-player-name")||"";}catch{return "";}});
+  const [nameError,setNameError]=useState("");
+  const startGame=()=>{try{savePlayerName(playerName);setNameError("");onStart();}catch(e){setNameError(e instanceof Error?e.message:"Pseudo invalide.");}};
   const level=levelForXp(profile.xp), xp=xpIntoLevel(profile.xp), needed=xpForNextLevel(level);
   const activeQuests=DAILY_QUESTS.filter(q=>profile.quest.active.includes(q.id));
   return <div className="overlay-in absolute inset-0 z-30 overflow-y-auto bg-[#05070d]/90 px-4 py-8 backdrop-blur-[6px] sm:px-6">
@@ -63,7 +66,8 @@ export function StartScreen({ best, selectedSkin, profile, countdown, onSelectSk
       </div>
       <div className="mt-2 h-2 w-full max-w-2xl overflow-hidden bg-slate-800"><div className="h-full bg-cyan-300 transition-all" style={{width:`${Math.min(100,xp/needed*100)}%`}}/></div>
       <div className="mt-1 flex w-full max-w-2xl justify-between font-mono text-[8px] text-slate-500"><span>{xp}/{needed} XP POUR LE NIVEAU {level+1}</span><span>{profile.unlockedSkins.length}/26 SKINS DÉBLOQUÉS</span></div>
-      <div className="mt-5 flex w-full max-w-md flex-col gap-2 sm:flex-row"><button onClick={onStart} className="cyber-btn cyber-btn-primary flex-1 px-8 py-4 text-xs font-bold tracking-[0.3em]"><span className="inline-flex items-center justify-center gap-3"><Play className="h-4 w-4 fill-current"/>INITIALISER</span></button><button onClick={()=>setShowLeaderboard(true)} className="cyber-btn cyber-btn-ghost flex-1 px-5 py-4 text-xs font-bold tracking-[0.2em]"><span className="inline-flex items-center justify-center gap-2"><Trophy className="h-4 w-4 text-amber-300"/>CLASSEMENT</span></button></div>
+      <div className="mt-5 w-full max-w-md text-left"><label htmlFor="spike-player-name" className="mb-2 block font-mono text-[9px] tracking-[0.25em] text-cyan-300">IDENTIFIANT OPÉRATEUR // PSEUDO</label><input id="spike-player-name" value={playerName} onChange={e=>{setPlayerName(e.target.value.slice(0,18));setNameError("");}} onKeyDown={e=>{if(e.key==="Enter")startGame();}} maxLength={18} minLength={2} placeholder="Entre ton pseudo pour jouer" className="w-full border border-cyan-400/30 bg-slate-950/90 px-4 py-3 font-mono text-sm tracking-wider text-slate-100 outline-none placeholder:text-slate-600 focus:border-cyan-300"/>{nameError&&<p className="mt-1 font-mono text-[9px] text-rose-300">{nameError}</p>}</div>
+      <div className="mt-3 flex w-full max-w-md flex-col gap-2 sm:flex-row"><button onClick={startGame} className="cyber-btn cyber-btn-primary flex-1 px-8 py-4 text-xs font-bold tracking-[0.3em]"><span className="inline-flex items-center justify-center gap-3"><Play className="h-4 w-4 fill-current"/>INITIALISER</span></button><button onClick={()=>setShowLeaderboard(true)} className="cyber-btn cyber-btn-ghost flex-1 px-5 py-4 text-xs font-bold tracking-[0.2em]"><span className="inline-flex items-center justify-center gap-2"><Trophy className="h-4 w-4 text-amber-300"/>CLASSEMENT</span></button></div>
       {showLeaderboard&&<LeaderboardPanel onClose={()=>setShowLeaderboard(false)}/ >}
       <div className="mt-4 flex flex-wrap justify-center gap-5 font-mono text-[9px] tracking-[0.18em] text-slate-500"><span>RECORD <b className="text-amber-300">{best}</b></span><span>MISSIONS <b className="text-cyan-300">{profile.runs}</b></span><span>ÉCLATS <b className="text-cyan-300">{profile.totalShards}</b></span></div>
       <section className="mt-8 w-full text-left">
