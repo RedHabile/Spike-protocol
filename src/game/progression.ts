@@ -37,14 +37,21 @@ export function ensureDaily(p:Profile,now=Date.now()):Profile{return now<p.quest
 export function remaining(p:Profile,now=Date.now()){return Math.max(0,p.quest.resetAt+DAY-now);}
 export function recordRun(profile:Profile,r:{score:number;shards:number;time:number}){const p=ensureDaily(profile);const xpEarned=Math.max(0,Math.floor(r.score));const xp=p.xp+xpEarned,runs=p.runs+1,totalShards=p.totalShards+r.shards,best=Math.max(p.best,r.score),longestRun=Math.max(p.longestRun,r.time),level=levelForXp(xp);const values={runs,best,shards:totalShards,time:longestRun,level};const newly=ACHIEVEMENTS.filter(a=>!p.unlockedAchievements.includes(a.id)&&values[a.metric]>=a.target);const unlockedAchievements=[...p.unlockedAchievements,...newly.map(a=>a.id)];const quest={...p.quest,progress:{...p.quest.progress,runs:p.quest.progress.runs+1,shards:p.quest.progress.shards+r.shards,score:Math.max(p.quest.progress.score,r.score),survive:Math.max(p.quest.progress.survive,Math.floor(r.time)),record:Math.max(p.quest.progress.record,best),highscore:Math.max(p.quest.progress.highscore,r.score)}};return{profile:{...p,xp,runs,totalShards,best,longestRun,unlockedAchievements,unlockedSkins:Array.from(new Set([...p.unlockedSkins,...LEVEL_SKINS.filter(x=>level>=x.level).map(x=>x.id),...newly.map(a=>a.skin)])),quest},xpEarned,unlocked:newly.map(a=>a.id)};}
 
-export interface DailyShopOffer { id:SkinId; price:number; }
-const SHOP_PRICES=[1200,1450,1700,1950,2200,2500,2800];
+export type ShopRarity = "MYTHIQUE" | "RARE" | "PREMIUM";
+export interface DailyShopOffer { id:SkinId; price:number; rarity:ShopRarity; }
+const MYTHIC_SKINS:SkinId[]=["singularity","hologram","galaxy","chromatic","nebula"];
+const RARE_SKINS:SkinId[]=["prism","royalflare","cyberpunk","goldrush","starlight","ultraviolet","ghostwire"];
+function shopPrice(id:SkinId):DailyShopOffer{
+ if(MYTHIC_SKINS.includes(id))return {id,price:2500,rarity:"MYTHIQUE"};
+ if(RARE_SKINS.includes(id))return {id,price:1900,rarity:"RARE"};
+ return {id,price:1550,rarity:"PREMIUM"};
+}
 export function getDailyShop(now=Date.now()):DailyShopOffer[]{
  const day=Math.floor(now/DAY), pool=[...SHOP_SKIN_IDS];
  let seed=(day+0x9e3779b9)>>>0;
  const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
  for(let i=pool.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
- return pool.slice(0,3).map(id=>({id,price:SHOP_PRICES[Math.floor(random()*SHOP_PRICES.length)]}));
+ return pool.slice(0,3).map(id=>shopPrice(id));
 }
 export function shopRemaining(now=Date.now()){return DAY-(now%DAY);}
 export function buyShopSkin(profile:Profile,id:SkinId,now=Date.now()):Profile{
