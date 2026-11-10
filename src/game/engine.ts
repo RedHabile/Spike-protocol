@@ -756,6 +756,7 @@ export class GameEngine {
       this.burst(p.x, p.y, 18, "#fbbf24", 190 * this.u, 0.5, 2.6 * this.u);
     } else if (type === "phase") {
       p.phaseT = 4;
+      p.invuln = Math.max(p.invuln, 4);
       this.float(p.x, p.y - 30 * this.u, "MODE PHASE", "#34d399", 15 * this.uh + 3);
       this.burst(p.x, p.y, 22, "#34d399", 210 * this.u, 0.6, 2.8 * this.u);
     } else {
@@ -769,17 +770,6 @@ export class GameEngine {
     const p = this.player;
     const { arena, u } = this;
 
-    if (p.phaseT > 0) {
-      p.phaseT = 0;
-      p.invuln = 0.75;
-      this.burst(p.x, p.y, 20, "#34d399", 230 * u, 0.5, 2.8 * u);
-      this.float(p.x, p.y - 30 * u, "PHASE ACTIVÉE", "#34d399", 16 * this.uh + 3);
-      if (side === "left") { this.spikesL = []; p.dir = 1; p.x = arena.x + this.r() + 2; p.vy = -220 * u; }
-      else if (side === "right") { this.spikesR = []; p.dir = -1; p.x = arena.x + arena.w - this.r() - 2; p.vy = -220 * u; }
-      else if (side === "top") { p.y = arena.y + 26 * u; p.vy = Math.abs(p.vy) * 0.4 + 280 * u; }
-      else { p.y = arena.y + arena.h - 26 * u; p.vy = -(Math.abs(p.vy) * 0.4 + 280 * u); }
-      return;
-    }
     if (p.shieldCharges > 0) {
       p.shieldCharges = Math.max(0, p.shieldCharges - 1);
       p.shield = p.shieldCharges > 0;
