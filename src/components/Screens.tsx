@@ -1,8 +1,8 @@
 import { Award, Cpu, Diamond, Home, LockKeyhole, Play, RotateCcw, Timer, TriangleAlert, Zap, Trophy, X, RefreshCw, Globe } from "lucide-react";
 import { useState } from "react";
 import { getPlayerName, leaderboardConfigured, loadLeaderboard, savePlayerName, type LeaderboardEntry } from "../game/leaderboard";
-import { SKINS, type GameStats, type SkinId } from "../game/engine";
-import { ACHIEVEMENTS, DAILY_QUESTS, questComplete, levelForXp, xpForNextLevel, xpIntoLevel, type Profile, type QuestId } from "../game/progression";
+import { SKINS, SHOP_SKIN_IDS, type GameStats, type SkinId } from "../game/engine";
+import { ACHIEVEMENTS, DAILY_QUESTS, getDailyShop, shopRemaining, questComplete, levelForXp, xpForNextLevel, xpIntoLevel, type Profile, type QuestId } from "../game/progression";
 
 
 function LeaderboardPanel({onClose}:{onClose:()=>void}) {
@@ -43,16 +43,16 @@ function LeaderboardPanel({onClose}:{onClose:()=>void}) {
   </div>;
 }
 
-export function StartScreen({ best, selectedSkin, profile, countdown, onSelectSkin, onClaimQuest, onStart }: {
+export function StartScreen({ best, selectedSkin, profile, countdown, onSelectSkin, onBuySkin, onClaimQuest, onStart }: {
   best:number; selectedSkin:SkinId; profile:Profile; countdown:string;
-  onSelectSkin:(id:SkinId)=>void; onClaimQuest:(id:QuestId)=>void; onStart:()=>void;
+  onSelectSkin:(id:SkinId)=>void; onBuySkin:(id:SkinId)=>void; onClaimQuest:(id:QuestId)=>void; onStart:()=>void;
 }) {
   const [showLeaderboard,setShowLeaderboard]=useState(false);
   const [playerName,setPlayerName]=useState(()=>{try{return localStorage.getItem("spike-player-name")||"";}catch{return "";}});
   const [nameError,setNameError]=useState("");
   const startGame=()=>{try{savePlayerName(playerName);setNameError("");onStart();}catch(e){setNameError(e instanceof Error?e.message:"Pseudo invalide.");}};
   const level=levelForXp(profile.xp), xp=xpIntoLevel(profile.xp), needed=xpForNextLevel(level);
-  const activeQuests=DAILY_QUESTS.filter(q=>profile.quest.active.includes(q.id));
+  const activeQuests=DAILY_QUESTS.filter(q=>profile.quest.active.includes(q.id));\n  const shopClock=Date.now();\n  const shopOffers=getDailyShop(shopClock);\n  const shopMs=shopRemaining(shopClock);\n  const shopTimer=[Math.floor(shopMs/3600000),Math.floor(shopMs%3600000/60000),Math.floor(shopMs%60000/1000)].map(v=>String(v).padStart(2,"0")).join(":");
   return <div className="overlay-in absolute inset-0 z-30 overflow-y-auto bg-[#05070d]/90 px-4 py-8 backdrop-blur-[6px] sm:px-6">
     <div className="mx-auto flex w-full max-w-4xl flex-col items-center text-center">
       <div className="mb-3 flex items-center gap-2 font-mono text-[10px] tracking-[0.5em] text-cyan-300/70"><Cpu className="h-3.5 w-3.5"/><span>SYS.BRÈCHE // v3.0</span><span className="blink-caret">▮</span></div>
@@ -73,12 +73,17 @@ export function StartScreen({ best, selectedSkin, profile, countdown, onSelectSk
       <section className="mt-8 w-full text-left">
         <div className="mb-3 flex items-end justify-between"><div><h3 className="font-display text-xl font-bold tracking-[0.15em] text-slate-100">IDENTITÉS <span className="text-cyan-300">//</span> SKINS</h3><p className="font-mono text-[9px] text-slate-500">Débloquez des apparences en gagnant de l'XP ou des succès.</p></div><span className="font-mono text-[10px] text-cyan-300">{profile.unlockedSkins.length}/26</span></div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-5">
-          {SKINS.map(skin=>{const unlocked=profile.unlockedSkins.includes(skin.id),active=selectedSkin===skin.id,achievement=ACHIEVEMENTS.find(a=>a.skin===skin.id);return <button key={skin.id} type="button" disabled={!unlocked} onClick={()=>onSelectSkin(skin.id)} className={`relative flex min-h-[82px] flex-col items-center justify-center gap-1 border px-2 py-2 font-mono transition-all ${active?"border-cyan-300 bg-cyan-300/10 shadow-[0_0_14px_rgba(34,211,238,0.16)]":"border-slate-700/70 bg-slate-950/70"} ${unlocked?"opacity-100":"cursor-not-allowed opacity-50"}`}>
+          {SKINS.filter(skin=>!SHOP_SKIN_IDS.includes(skin.id)).map(skin=>{const unlocked=profile.unlockedSkins.includes(skin.id),active=selectedSkin===skin.id,achievement=ACHIEVEMENTS.find(a=>a.skin===skin.id);return <button key={skin.id} type="button" disabled={!unlocked} onClick={()=>onSelectSkin(skin.id)} className={`relative flex min-h-[82px] flex-col items-center justify-center gap-1 border px-2 py-2 font-mono transition-all ${active?"border-cyan-300 bg-cyan-300/10 shadow-[0_0_14px_rgba(34,211,238,0.16)]":"border-slate-700/70 bg-slate-950/70"} ${unlocked?"opacity-100":"cursor-not-allowed opacity-50"}`}>
             <span className="h-3 w-12 rounded-full" style={{background:`linear-gradient(90deg,${skin.dark},${skin.mid},${skin.bright})`,boxShadow:`0 0 12px ${skin.glow}`}}/>
             <span className="text-[9px] font-bold tracking-[0.1em] text-slate-200">{skin.name}</span>
             <span className="inline-flex items-center gap-1 text-[7px] text-slate-500">{active?"ÉQUIPÉ":unlocked?"DISPONIBLE":achievement?<><LockKeyhole className="h-2.5 w-2.5"/>SUCCÈS</>:<><LockKeyhole className="h-2.5 w-2.5"/>NIVEAU {skin.unlock}</>}</span>
           </button>})}
         </div>
+      </section>
+      <section className="mt-8 w-full text-left">
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-2"><div><h3 className="font-display text-xl font-bold tracking-[0.15em] text-amber-200">MARCHÉ NOIR <span className="text-amber-300">//</span></h3><p className="font-mono text-[9px] text-slate-500">3 skins premium exclusifs, renouvelés automatiquement toutes les 24 heures.</p></div><div className="text-right"><span className="block font-mono text-[8px] text-slate-500">NOUVEAU STOCK DANS</span><b className="font-mono text-xs text-amber-300">{shopTimer}</b></div></div>
+        <div className="grid gap-2 md:grid-cols-3">{shopOffers.map(offer=>{const skin=SKINS.find(s=>s.id===offer.id)!;const owned=profile.unlockedSkins.includes(offer.id);const active=selectedSkin===offer.id;const canAfford=profile.credits>=offer.price;return <div key={offer.id} className="cyber-panel flex flex-col gap-3 p-3"><div className="flex items-center justify-between"><span className="font-mono text-[8px] tracking-[0.2em] text-amber-300">SÉRIE LIMITÉE</span><span className="font-mono text-[8px] text-slate-500">EXCLUSIF</span></div><div className="flex h-16 items-center justify-center"><div className="h-8 w-36 rounded-full" style={{background:`linear-gradient(110deg,${skin.dark},${skin.mid},${skin.bright},${skin.mid},${skin.dark})`,boxShadow:`0 0 24px ${skin.glow}`}}/></div><div className="text-center"><strong className="font-display text-sm tracking-wider text-slate-100">{skin.name}</strong><p className="mt-1 font-mono text-[8px] text-slate-500">Dégradé exclusif multicolore</p></div>{owned?<button disabled={active} onClick={()=>onSelectSkin(offer.id)} className="border border-cyan-400/50 px-3 py-2 font-mono text-[9px] tracking-wider text-cyan-200 disabled:opacity-50">{active?"ÉQUIPÉ":"ÉQUIPER"}</button>:<button disabled={!canAfford} onClick={()=>onBuySkin(offer.id)} className="border border-amber-300/50 bg-amber-300/10 px-3 py-2 font-mono text-[9px] tracking-wider text-amber-200 disabled:cursor-not-allowed disabled:opacity-35">ACHETER · {offer.price.toLocaleString("fr-FR")} ◆</button>}</div>})}</div>
+        <p className="mt-2 font-mono text-[8px] text-slate-600">Les offres sont identiques pour tous les joueurs. Les skins achetés restent dans ta collection après le renouvellement.</p>
       </section>
       <section className="mt-8 w-full text-left">
         <div className="mb-3 flex items-end justify-between"><div><h3 className="font-display text-xl font-bold tracking-[0.15em] text-slate-100">MISSIONS QUOTIDIENNES <span className="text-cyan-300">//</span></h3><p className="font-mono text-[9px] text-slate-500">3 contrats renouvelés toutes les 24 heures.</p></div><div className="text-right"><span className="block font-mono text-[8px] text-slate-500">RENOUVELLEMENT</span><b className="font-mono text-xs text-amber-300">{countdown}</b></div></div>
