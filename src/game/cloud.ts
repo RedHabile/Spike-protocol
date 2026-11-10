@@ -67,7 +67,7 @@ export async function signIn(email: string, password: string): Promise<AuthUser>
 }
 
 export async function signUp(email: string, password: string): Promise<SignUpResult> {
-  const response = await fetch(`${PROJECT_URL}/auth/v1/signup`, {
+  const response = await fetch(`${PROJECT_URL}/auth/v1/signup?redirect_to=${encodeURIComponent("https://redhabile.github.io/Spike-protocol/")}`, {
     method:"POST", headers:headers(),
     body:JSON.stringify({ email:email.trim(), password, options:{ emailRedirectTo:"https://redhabile.github.io/Spike-protocol/" } }),
   });
@@ -83,7 +83,7 @@ export async function signUp(email: string, password: string): Promise<SignUpRes
 
 
 export async function resendConfirmationEmail(email: string): Promise<void> {
-  const response = await fetch(`${PROJECT_URL}/auth/v1/resend`, {
+  const response = await fetch(`${PROJECT_URL}/auth/v1/resend?redirect_to=${encodeURIComponent("https://redhabile.github.io/Spike-protocol/")}`, {
     method:"POST", headers:headers(),
     body:JSON.stringify({ type:"signup", email:email.trim(), options:{ emailRedirectTo:"https://redhabile.github.io/Spike-protocol/" } }),
   });
