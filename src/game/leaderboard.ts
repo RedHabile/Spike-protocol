@@ -3,8 +3,9 @@ export interface LeaderboardEntry { player_name: string; best_score: number; upd
 const STORAGE_ID = "spike-player-id";
 const STORAGE_NAME = "spike-player-name";
 const env = (import.meta as ImportMeta & { env: { VITE_SUPABASE_URL?: string; VITE_SUPABASE_ANON_KEY?: string } }).env;
-const url = env.VITE_SUPABASE_URL?.replace(/\/$/, "");
-const key = env.VITE_SUPABASE_ANON_KEY;
+// Configuration publique du projet Supabase. La clé publishable est conçue pour être utilisée côté navigateur.
+const url = (env.VITE_SUPABASE_URL || "https://rrhulffyvltogdbbagir.supabase.co").replace(/\/$/, "");
+const key = env.VITE_SUPABASE_ANON_KEY || "sb_publishable_zYunuTczRdpR804RxUXnNA_Q3mfNe4n";
 export const leaderboardConfigured = Boolean(url && key);
 
 function playerId(): string {
