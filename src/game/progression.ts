@@ -44,7 +44,7 @@ export function getDailyShop(now=Date.now()):DailyShopOffer[]{
  let seed=(day+0x9e3779b9)>>>0;
  const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
  for(let i=pool.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
- return pool.slice(0,3).map((id,index)=>({id,price:SHOP_PRICES[Math.floor(random()*SHOP_PRICES.length)]}));
+ return pool.slice(0,3).map(id=>({id,price:SHOP_PRICES[Math.floor(random()*SHOP_PRICES.length)]}));
 }
 export function shopRemaining(now=Date.now()){return DAY-(now%DAY);}
 export function buyShopSkin(profile:Profile,id:SkinId,now=Date.now()):Profile{
