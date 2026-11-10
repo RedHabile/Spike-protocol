@@ -5,7 +5,7 @@ const STORAGE_NAME = "spike-player-name";
 const env = (import.meta as ImportMeta & { env: { VITE_SUPABASE_URL?: string; VITE_SUPABASE_ANON_KEY?: string } }).env;
 // Configuration publique du projet Supabase. La clé publishable est conçue pour être utilisée côté navigateur.
 const url = (env.VITE_SUPABASE_URL || "https://rrhulffyvltogdbbagir.supabase.co").replace(/\/$/, "");
-const key = env.VITE_SUPABASE_ANON_KEY || "sb_publishable_zYunuTczRdpR804RxUXnNA_Q3mfNe4n";
+const key = env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyaHVsZmZ5dmx0b2dkYmJhZ2lyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyOTgwOTksImV4cCI6MjEwOTg3NDA5OX0.Pmac0mgdsVlJRXapMIJg6YVCXLiMzJmHCKshtVmLhRA";
 export const leaderboardConfigured = Boolean(url && key);
 
 function playerId(): string {
