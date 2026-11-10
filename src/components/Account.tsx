@@ -20,7 +20,7 @@ export function AccountWidget({ user, onAuthenticated, onSignedOut }: {
   };
   const logout=async()=>{setBusy(true);setError("");try{await signOut();onSignedOut();setMessage("Déconnexion effectuée.");}catch(e){setError(e instanceof Error?e.message:"Déconnexion impossible.");}finally{setBusy(false);}};
   return <>
-    <button onClick={()=>{setOpen(true);setError("");setMessage("");}} className="cyber-btn cyber-btn-ghost fixed left-3 top-3 z-50 flex items-center gap-2 px-3 py-2 font-mono text-[9px] tracking-wider sm:left-5 sm:top-5">
+    <button onClick={()=>{setOpen(true);setError("");setMessage("");}} className="cyber-btn cyber-btn-ghost fixed right-3 top-16 z-50 sm:right-5 flex items-center gap-2 px-3 py-2 font-mono text-[9px] tracking-wider sm:left-5 sm:top-5">
       {user?<Cloud className="h-3.5 w-3.5 text-emerald-300"/>:<UserRound className="h-3.5 w-3.5"/>}
       {user?"COMPTE CONNECTÉ":"COMPTE"}
     </button>
