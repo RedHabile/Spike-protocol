@@ -17,6 +17,17 @@ export interface GameStats {
 type PowerType = "shield" | "slowmo" | "magnet";
 
 export type SkinId = "classic"|"plasma"|"toxic"|"sunset"|"ice"|"void"|"cobalt"|"crimson"|"sandstorm"|"digital"|"carbon"|"royal"|"hazard"|"aurora"|"obsidian"|"titan"|"eclipse"|"inferno"|"overdrive"|"apex"|"warborn"|"headhunter"|"immortal"|"vanguard"|"overlord"|"spectral"|"nebula"|"prism"|"royalflare"|"deepsea"|"rosequartz"|"cyberpunk"|"goldrush"|"ghostwire"|"starlight"|"venomwave"|"frostbite"|"bloodmoon"|"neonviper"|"galaxy"|"chromatic"|"sunken"|"emberstorm"|"ultraviolet"|"hologram"|"singularity";
+export type TrailId = "comet"|"lightning"|"embers"|"prism"|"glitch"|"aurora"|"void"|"stardust";
+export const TRAILS:{id:TrailId;name:string;colors:string[];glow:string;style:"smooth"|"dash"|"spark"|"ribbon"}[]=[
+{id:"comet",name:"COMÈTE",colors:["#fff","#67e8f9","#0891b2"],glow:"#22d3ee",style:"smooth"},
+{id:"lightning",name:"ÉCLAIR",colors:["#fff","#fef08a","#eab308"],glow:"#facc15",style:"dash"},
+{id:"embers",name:"BRAISES",colors:["#fef3c7","#fb923c","#dc2626"],glow:"#f97316",style:"spark"},
+{id:"prism",name:"PRISME",colors:["#f0abfc","#38bdf8","#a3e635"],glow:"#c084fc",style:"ribbon"},
+{id:"glitch",name:"GLITCH",colors:["#f0abfc","#ec4899","#22d3ee"],glow:"#e879f9",style:"dash"},
+{id:"aurora",name:"AURORE",colors:["#ccfbf1","#2dd4bf","#8b5cf6"],glow:"#5eead4",style:"ribbon"},
+{id:"void",name:"NÉANT",colors:["#e2e8f0","#818cf8","#312e81"],glow:"#818cf8",style:"smooth"},
+{id:"stardust",name:"POUSSIÈRE D'ÉTOILES",colors:["#fff","#c4b5fd","#f9a8d4"],glow:"#c4b5fd",style:"spark"}
+];
 export const SKINS:{id:SkinId;name:string;unlock:number;bright:string;mid:string;dark:string;glow:string}[]=[
 {id:"classic",name:"CYAN CORE",unlock:1,bright:"#fff",mid:"#a5f3fc",dark:"#0891b2",glow:"#22d3ee"},
 {id:"plasma",name:"PLASMA",unlock:2,bright:"#fff",mid:"#f0abfc",dark:"#a21caf",glow:"#e879f9"},
@@ -168,10 +179,12 @@ export class GameEngine {
   private maxSpeed = 0;
   private level = 0;
   private skinId: SkinId = "classic";
+  private trailId: TrailId = "comet";
 
   private get skin() { return SKINS.find((s) => s.id === this.skinId) ?? SKINS[0]; }
 
   setSkin(id: SkinId): void { this.skinId = id; }
+  setTrail(id: TrailId): void { this.trailId = id; }
 
   private bgTime = 0;
   private bgThemeIndex = 0;
@@ -1181,18 +1194,21 @@ export class GameEngine {
     const p = this.player;
     const r = this.r();
 
-    // traînée
+    // Traînée cosmétique équipée
+    const effect = TRAILS.find(t => t.id === this.trailId) ?? TRAILS[0];
     if (this.trail.length > 1) {
+      ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.shadowColor = effect.glow; ctx.shadowBlur = 12;
       for (let i = 1; i < this.trail.length; i++) {
-        const a = i / this.trail.length;
-        ctx.strokeStyle = this.skin.glow;
-        ctx.lineWidth = r * 1.4 * a;
-        ctx.lineCap = "round";
-        ctx.beginPath();
-        ctx.moveTo(this.trail[i - 1].x, this.trail[i - 1].y);
-        ctx.lineTo(this.trail[i].x, this.trail[i].y);
-        ctx.stroke();
+        const a = i / this.trail.length, from = this.trail[i - 1], to = this.trail[i];
+        if (effect.style === "dash" && i % 3 === 0) continue;
+        ctx.globalAlpha = 0.12 + a * 0.78;
+        ctx.strokeStyle = effect.colors[Math.min(effect.colors.length - 1, Math.floor((1-a) * effect.colors.length))];
+        ctx.lineWidth = r * (effect.style === "ribbon" ? 1.8 : 1.25) * a;
+        ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y); ctx.stroke();
+        if (effect.style === "spark" && i % 3 === 0) { ctx.fillStyle = effect.colors[i % effect.colors.length]; ctx.beginPath(); ctx.arc(to.x,to.y,Math.max(1,r*0.13*a),0,TAU); ctx.fill(); }
+        if (effect.style === "ribbon" && i % 2 === 0) { ctx.globalAlpha=a*0.3;ctx.lineWidth=r*2.5*a;ctx.beginPath();ctx.moveTo(from.x,from.y);ctx.lineTo(to.x,to.y);ctx.stroke(); }
       }
+      ctx.restore();
     }
 
     ctx.save();
