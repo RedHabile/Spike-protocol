@@ -9,12 +9,12 @@ export function AccountWidget({ user, onAuthenticated, onSignedOut }: {
 }) {
   const [open,setOpen]=useState(false),[mode,setMode]=useState<"login"|"register">("login");
   const [email,setEmail]=useState(""),[password,setPassword]=useState("");
-  const [busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState(""),[canResend,setCanResend]=useState(false);
+  const [busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState("");
   const submit=async()=>{
     setBusy(true);setError("");setMessage("");
     try {
       if(mode==="login") { const account=await signIn(email,password); await onAuthenticated(account); setPassword(""); setMessage("Connexion réussie. Progression synchronisée."); }
-      else { const result=await signUp(email,password); if(result.needsEmailConfirmation) { setCanResend(true); setMessage("Compte créé ! Vérifie ta boîte mail. Tu peux renvoyer le mail de confirmation ci-dessous."); } else { await onAuthenticated(result.user); setPassword(""); setMessage("Compte créé et progression synchronisée."); } }
+      else { const result=await signUp(email,password); if(result.needsEmailConfirmation) {  setMessage("Compte créé ! Vérifie ta boîte mail. Tu peux renvoyer le mail de confirmation ci-dessous."); } else { await onAuthenticated(result.user); setPassword(""); setMessage("Compte créé et progression synchronisée."); } }
     } catch(e) { setError(e instanceof Error?e.message:"Une erreur est survenue."); }
     finally { setBusy(false); }
   };
