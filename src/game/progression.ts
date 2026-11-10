@@ -43,9 +43,9 @@ export interface DailyTrailOffer { id:TrailId; price:number; rarity:ShopRarity; 
 const MYTHIC_SKINS:SkinId[]=["singularity","hologram","galaxy","chromatic","nebula"];
 const RARE_SKINS:SkinId[]=["prism","royalflare","cyberpunk","goldrush","starlight","ultraviolet","ghostwire"];
 function shopPrice(id:SkinId):DailyShopOffer{
- if(MYTHIC_SKINS.includes(id))return {id,price:2500,rarity:"MYTHIQUE"};
- if(RARE_SKINS.includes(id))return {id,price:1900,rarity:"RARE"};
- return {id,price:1550,rarity:"PREMIUM"};
+ if(MYTHIC_SKINS.includes(id))return {id,price:1000,rarity:"MYTHIQUE"};
+ if(RARE_SKINS.includes(id))return {id,price:800,rarity:"RARE"};
+ return {id,price:650,rarity:"PREMIUM"};
 }
 export function getDailyShop(now=Date.now()):DailyShopOffer[]{
  const day=Math.floor(now/DAY), pool=[...SHOP_SKIN_IDS];
