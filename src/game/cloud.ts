@@ -69,7 +69,7 @@ export async function signIn(email: string, password: string): Promise<AuthUser>
 export async function signUp(email: string, password: string): Promise<SignUpResult> {
   const response = await fetch(`${PROJECT_URL}/auth/v1/signup`, {
     method:"POST", headers:headers(),
-    body:JSON.stringify({ email:email.trim(), password, options:{ emailRedirectTo:window.location.origin + window.location.pathname } }),
+    body:JSON.stringify({ email:email.trim(), password, options:{ emailRedirectTo:"https://redhabile.github.io/Spike-protocol/" } }),
   });
   if (!response.ok) throw await responseError(response);
   const data = await response.json() as AuthResponse;
