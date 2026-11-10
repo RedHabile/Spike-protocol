@@ -17,7 +17,7 @@ export interface GameStats {
 type PowerType = "shield" | "slowmo" | "magnet" | "phase" | "double";
 
 export type SkinId = "classic"|"plasma"|"toxic"|"sunset"|"ice"|"void"|"cobalt"|"crimson"|"sandstorm"|"digital"|"carbon"|"royal"|"hazard"|"aurora"|"obsidian"|"titan"|"eclipse"|"inferno"|"overdrive"|"apex"|"warborn"|"headhunter"|"immortal"|"vanguard"|"overlord"|"spectral"|"nebula"|"prism"|"royalflare"|"deepsea"|"rosequartz"|"cyberpunk"|"goldrush"|"ghostwire"|"starlight"|"venomwave"|"frostbite"|"bloodmoon"|"neonviper"|"galaxy"|"chromatic"|"sunken"|"emberstorm"|"ultraviolet"|"hologram"|"singularity";
-export type TrailId = "comet"|"lightning"|"embers"|"prism"|"glitch"|"aurora"|"void"|"stardust";
+export type TrailId = "comet"|"lightning"|"embers"|"prism"|"glitch"|"aurora"|"void"|"stardust"|"rainbow"|"toxicmist"|"pinknova"|"blueflame"|"sunflare"|"pixelstorm"|"moonlight"|"dragon"|"sakura"|"electric"|"arctic"|"golden"|"cyberstream"|"blackhole"|"dreamwave"|"lavacosmic";
 export const TRAILS:{id:TrailId;name:string;colors:string[];glow:string;style:"smooth"|"dash"|"spark"|"ribbon"}[]=[
 {id:"comet",name:"COMÈTE",colors:["#fff","#67e8f9","#0891b2"],glow:"#22d3ee",style:"smooth"},
 {id:"lightning",name:"ÉCLAIR",colors:["#fff","#fef08a","#eab308"],glow:"#facc15",style:"dash"},
@@ -26,8 +26,25 @@ export const TRAILS:{id:TrailId;name:string;colors:string[];glow:string;style:"s
 {id:"glitch",name:"GLITCH",colors:["#f0abfc","#ec4899","#22d3ee"],glow:"#e879f9",style:"dash"},
 {id:"aurora",name:"AURORE",colors:["#ccfbf1","#2dd4bf","#8b5cf6"],glow:"#5eead4",style:"ribbon"},
 {id:"void",name:"NÉANT",colors:["#e2e8f0","#818cf8","#312e81"],glow:"#818cf8",style:"smooth"},
-{id:"stardust",name:"POUSSIÈRE D'ÉTOILES",colors:["#fff","#c4b5fd","#f9a8d4"],glow:"#c4b5fd",style:"spark"}
+{id:"stardust",name:"POUSSIÈRE D'ÉTOILES",colors:["#fff","#c4b5fd","#f9a8d4"],glow:"#c4b5fd",style:"spark"},
+{id:"rainbow",name:"ARC-EN-CIEL",colors:["#fb7185","#facc15","#34d399","#60a5fa","#c084fc"],glow:"#f0abfc",style:"ribbon"},
+{id:"toxicmist",name:"BRUME TOXIQUE",colors:["#d9f99d","#84cc16","#166534"],glow:"#a3e635",style:"smooth"},
+{id:"pinknova",name:"NOVA ROSE",colors:["#fce7f3","#f472b6","#a21caf"],glow:"#f472b6",style:"spark"},
+{id:"blueflame",name:"FLAMME BLEUE",colors:["#eff6ff","#38bdf8","#1d4ed8"],glow:"#60a5fa",style:"dash"},
+{id:"sunflare",name:"ÉRUPTION SOLAIRE",colors:["#fef9c3","#fb923c","#e11d48"],glow:"#fbbf24",style:"spark"},
+{id:"pixelstorm",name:"PIXEL STORM",colors:["#67e8f9","#a3e635","#e879f9"],glow:"#22d3ee",style:"dash"},
+{id:"moonlight",name:"CLAIR DE LUNE",colors:["#f8fafc","#cbd5e1","#64748b"],glow:"#cbd5e1",style:"smooth"},
+{id:"dragon",name:"SOUFFLE DU DRAGON",colors:["#fef08a","#ef4444","#7f1d1d"],glow:"#ef4444",style:"spark"},
+{id:"electric",name:"SURCHARGE",colors:["#fef08a","#22d3ee","#2563eb"],glow:"#22d3ee",style:"dash"},
+{id:"arctic",name:"TEMPÊTE ARCTIQUE",colors:["#ecfeff","#67e8f9","#6366f1"],glow:"#a5f3fc",style:"ribbon"},
+{id:"golden",name:"TOUCHE D'OR",colors:["#fef3c7","#f59e0b","#92400e"],glow:"#fbbf24",style:"smooth"},
+{id:"cyberstream",name:"CYBERSTREAM",colors:["#22d3ee","#d946ef","#4f46e5"],glow:"#d946ef",style:"ribbon"},
+{id:"sakura",name:"SAKURA",colors:["#fff1f2","#f9a8d4","#be185d"],glow:"#f9a8d4",style:"spark"},
+{id:"blackhole",name:"TROU NOIR",colors:["#e9d5ff","#6d28d9","#020617"],glow:"#8b5cf6",style:"smooth"},
+{id:"dreamwave",name:"DREAMWAVE",colors:["#c4b5fd","#f9a8d4","#67e8f9"],glow:"#c084fc",style:"ribbon"},
+{id:"lavacosmic",name:"LAVE COSMIQUE",colors:["#fed7aa","#f97316","#7f1d1d"],glow:"#fb923c",style:"spark"}
 ];
+export const SHOP_TRAIL_IDS:TrailId[]=["rainbow","pinknova","blueflame","sunflare","pixelstorm","dragon","golden","cyberstream","sakura","blackhole","dreamwave","lavacosmic"];
 export const SKINS:{id:SkinId;name:string;unlock:number;bright:string;mid:string;dark:string;glow:string}[]=[
 {id:"classic",name:"CYAN CORE",unlock:1,bright:"#fff",mid:"#a5f3fc",dark:"#0891b2",glow:"#22d3ee"},
 {id:"plasma",name:"PLASMA",unlock:2,bright:"#fff",mid:"#f0abfc",dark:"#a21caf",glow:"#e879f9"},
