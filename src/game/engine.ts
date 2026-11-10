@@ -14,7 +14,7 @@ export interface GameStats {
   xpEarned: number;
 }
 
-type PowerType = "shield" | "slowmo" | "magnet";
+type PowerType = "shield" | "slowmo" | "magnet" | "phase" | "double";
 
 export type SkinId = "classic"|"plasma"|"toxic"|"sunset"|"ice"|"void"|"cobalt"|"crimson"|"sandstorm"|"digital"|"carbon"|"royal"|"hazard"|"aurora"|"obsidian"|"titan"|"eclipse"|"inferno"|"overdrive"|"apex"|"warborn"|"headhunter"|"immortal"|"vanguard"|"overlord"|"spectral"|"nebula"|"prism"|"royalflare"|"deepsea"|"rosequartz"|"cyberpunk"|"goldrush"|"ghostwire"|"starlight"|"venomwave"|"frostbite"|"bloodmoon"|"neonviper"|"galaxy"|"chromatic"|"sunken"|"emberstorm"|"ultraviolet"|"hologram"|"singularity";
 export type TrailId = "comet"|"lightning"|"embers"|"prism"|"glitch"|"aurora"|"void"|"stardust";
@@ -201,8 +201,11 @@ export class GameEngine {
     squash: 0,
     invuln: 0,
     shield: false,
+    shieldCharges: 0,
     slowmoT: 0,
     magnetT: 0,
+    phaseT: 0,
+    doubleT: 0,
   };
 
   private spikesL: Spike[] = [];
@@ -308,8 +311,11 @@ export class GameEngine {
       squash: 0,
       invuln: 0,
       shield: false,
+      shieldCharges: 0,
       slowmoT: 0,
       magnetT: 0,
+      phaseT: 0,
+      doubleT: 0,
     };
     this.spikesL = this.genWall();
     this.spikesR = this.genWall();
@@ -454,7 +460,7 @@ export class GameEngine {
 
   private spawnPowerup(): void {
     const { arena, u } = this;
-    const types: PowerType[] = ["shield", "slowmo", "magnet"];
+    const types: PowerType[] = ["shield", "shield", "slowmo", "magnet", "phase", "double"];
     const type = types[Math.floor(Math.random() * types.length)];
     this.powerups.push({
       x: rand(arena.x + arena.w * 0.28, arena.x + arena.w * 0.72),
@@ -542,6 +548,8 @@ export class GameEngine {
 
     p.slowmoT = Math.max(0, p.slowmoT - dt);
     p.magnetT = Math.max(0, p.magnetT - dt);
+    p.phaseT = Math.max(0, p.phaseT - dt);
+    p.doubleT = Math.max(0, p.doubleT - dt);
     p.invuln = Math.max(0, p.invuln - dt);
 
     // niveau de menace
@@ -627,11 +635,12 @@ export class GameEngine {
       } else if (Math.hypot(p.x - sh.x, p.y - sh.y) < r + 12 * u) {
         this.shard = null;
         this.shardTimer = rand(2.6, 4.6);
-        this.score += 3;
+        const shardPoints = p.doubleT > 0 ? 6 : 3;
+        this.score += shardPoints;
         this.shardsCollected++;
         this.sound.shard();
         this.burst(sh.x, sh.y, 16, "#fbbf24", 200 * u, 0.55, 3 * u);
-        this.float(sh.x, sh.y - 10 * u, "+3", "#fbbf24", 18 * this.uh + 4);
+        this.float(sh.x, sh.y - 10 * u, `+${shardPoints}`, "#fbbf24", 18 * this.uh + 4);
         this.checkBest();
       }
     }
@@ -733,17 +742,26 @@ export class GameEngine {
     const p = this.player;
     this.sound.powerup();
     if (type === "shield") {
-      p.shield = true;
-      this.float(p.x, p.y - 30 * this.u, "BOUCLIER ACTIF", "#22d3ee", 15 * this.uh + 3);
+      p.shieldCharges = Math.min(3, p.shieldCharges + 1);
+      p.shield = p.shieldCharges > 0;
+      this.float(p.x, p.y - 30 * this.u, `BOUCLIER +1  (${p.shieldCharges}/3)`, "#22d3ee", 15 * this.uh + 3);
       this.burst(p.x, p.y, 18, "#22d3ee", 190 * this.u, 0.5, 2.6 * this.u);
     } else if (type === "slowmo") {
       p.slowmoT = 6;
       this.float(p.x, p.y - 30 * this.u, "RALENTI TEMPOREL", "#a78bfa", 15 * this.uh + 3);
       this.burst(p.x, p.y, 18, "#a78bfa", 190 * this.u, 0.5, 2.6 * this.u);
-    } else {
+    } else if (type === "magnet") {
       p.magnetT = 8;
       this.float(p.x, p.y - 30 * this.u, "AIMANT À DONNÉES", "#fbbf24", 15 * this.uh + 3);
       this.burst(p.x, p.y, 18, "#fbbf24", 190 * this.u, 0.5, 2.6 * this.u);
+    } else if (type === "phase") {
+      p.phaseT = 4;
+      this.float(p.x, p.y - 30 * this.u, "MODE PHASE", "#34d399", 15 * this.uh + 3);
+      this.burst(p.x, p.y, 22, "#34d399", 210 * this.u, 0.6, 2.8 * this.u);
+    } else {
+      p.doubleT = 10;
+      this.float(p.x, p.y - 30 * this.u, "DOUBLE FRAGMENTS", "#fb7185", 15 * this.uh + 3);
+      this.burst(p.x, p.y, 22, "#fb7185", 210 * this.u, 0.6, 2.8 * this.u);
     }
   }
 
@@ -751,14 +769,26 @@ export class GameEngine {
     const p = this.player;
     const { arena, u } = this;
 
-    if (p.shield) {
-      p.shield = false;
+    if (p.phaseT > 0) {
+      p.phaseT = 0;
+      p.invuln = 0.75;
+      this.burst(p.x, p.y, 20, "#34d399", 230 * u, 0.5, 2.8 * u);
+      this.float(p.x, p.y - 30 * u, "PHASE ACTIVÉE", "#34d399", 16 * this.uh + 3);
+      if (side === "left") { this.spikesL = []; p.dir = 1; p.x = arena.x + this.r() + 2; p.vy = -220 * u; }
+      else if (side === "right") { this.spikesR = []; p.dir = -1; p.x = arena.x + arena.w - this.r() - 2; p.vy = -220 * u; }
+      else if (side === "top") { p.y = arena.y + 26 * u; p.vy = Math.abs(p.vy) * 0.4 + 280 * u; }
+      else { p.y = arena.y + arena.h - 26 * u; p.vy = -(Math.abs(p.vy) * 0.4 + 280 * u); }
+      return;
+    }
+    if (p.shieldCharges > 0) {
+      p.shieldCharges = Math.max(0, p.shieldCharges - 1);
+      p.shield = p.shieldCharges > 0;
       p.invuln = 1.5;
       this.sound.shieldBreak();
       this.shake = 13;
       this.flash = { r: 34, g: 211, b: 238, a: 0.28 };
       this.burst(p.x, p.y, 26, "#67e8f9", 260 * u, 0.7, 3 * u);
-      this.float(p.x, p.y - 30 * u, "BOUCLIER PERDU", "#fb7185", 16 * this.uh + 3);
+      this.float(p.x, p.y - 30 * u, p.shieldCharges > 0 ? `BOUCLIER RESTANT ${p.shieldCharges}` : "DERNIER BOUCLIER PERDU", "#fb7185", 16 * this.uh + 3);
       if (side === "left") {
         this.spikesL = [];
         p.dir = 1;
@@ -1122,7 +1152,7 @@ export class GameEngine {
       const blink = pw.ttl - pw.age < 2 ? (Math.sin(this.bgTime * 14) > 0 ? 1 : 0.3) : 1;
       const bob = Math.sin(this.bgTime * 3 + pw.x) * 3 * u;
       const s = 15 * u;
-      const color = pw.type === "shield" ? "#22d3ee" : pw.type === "slowmo" ? "#a78bfa" : "#fbbf24";
+      const color = pw.type === "shield" ? "#22d3ee" : pw.type === "slowmo" ? "#a78bfa" : pw.type === "magnet" ? "#fbbf24" : pw.type === "phase" ? "#34d399" : "#fb7185";
       ctx.save();
       ctx.globalAlpha = blink;
       ctx.translate(pw.x, pw.y + bob);
@@ -1141,7 +1171,7 @@ export class GameEngine {
 
   private drawPowerIcon(type: PowerType, x: number, y: number, u: number): void {
     const { ctx } = this;
-    const color = type === "shield" ? "#67e8f9" : type === "slowmo" ? "#c4b5fd" : "#fde68a";
+    const color = type === "shield" ? "#67e8f9" : type === "slowmo" ? "#c4b5fd" : type === "magnet" ? "#fde68a" : type === "phase" ? "#6ee7b7" : "#fda4af";
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
     ctx.lineWidth = 2 * u;
@@ -1174,7 +1204,7 @@ export class GameEngine {
       ctx.beginPath();
       ctx.arc(x, y + 3.6 * u, 1.3 * u, 0, TAU);
       ctx.fill();
-    } else {
+    } else if (type === "magnet") {
       ctx.beginPath();
       ctx.arc(x, y - 1 * u, 6.4 * u, Math.PI, 0, false);
       ctx.stroke();
@@ -1186,6 +1216,11 @@ export class GameEngine {
       ctx.stroke();
       ctx.fillRect(x - 8 * u, y + 5 * u, 3.2 * u, 3 * u);
       ctx.fillRect(x + 4.8 * u, y + 5 * u, 3.2 * u, 3 * u);
+    } else if (type === "phase") {
+      ctx.beginPath(); ctx.arc(x,y,7*u,0,TAU); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x-3*u,y); ctx.lineTo(x,y-4*u); ctx.lineTo(x+3*u,y); ctx.lineTo(x,y+4*u); ctx.closePath(); ctx.stroke();
+    } else {
+      ctx.font = `bold ${12*u}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("×2",x,y);
     }
   }
 
@@ -1238,7 +1273,7 @@ export class GameEngine {
     ctx.stroke();
 
     // bouclier
-    if (p.shield) {
+    if (p.shieldCharges > 0) {
       ctx.rotate(this.bgTime * 2.2);
       ctx.strokeStyle = this.skin.glow;
       ctx.shadowColor = this.skin.glow;
@@ -1339,7 +1374,9 @@ export class GameEngine {
     const p = this.player;
     if (p.slowmoT > 0) chips.push({ label: "RALENTI", frac: p.slowmoT / 6, color: "#a78bfa" });
     if (p.magnetT > 0) chips.push({ label: "AIMANT", frac: p.magnetT / 8, color: "#fbbf24" });
-    if (p.shield) chips.push({ label: "BOUCLIER", frac: 1, color: "#22d3ee" });
+    if (p.phaseT > 0) chips.push({ label: "PHASE", frac: p.phaseT / 4, color: "#34d399" });
+    if (p.doubleT > 0) chips.push({ label: "DOUBLE", frac: p.doubleT / 10, color: "#fb7185" });
+    if (p.shieldCharges > 0) chips.push({ label: `BOUCLIER ×${p.shieldCharges}`, frac: p.shieldCharges / 3, color: "#22d3ee" });
     ctx.textAlign = "left";
     chips.forEach((c, i) => {
       const cw = 96 * uh + 10;
