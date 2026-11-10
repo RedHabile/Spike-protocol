@@ -44,8 +44,8 @@ const MYTHIC_SKINS:SkinId[]=["singularity","hologram","galaxy","chromatic","nebu
 const RARE_SKINS:SkinId[]=["prism","royalflare","cyberpunk","goldrush","starlight","ultraviolet","ghostwire"];
 function shopPrice(id:SkinId):DailyShopOffer{
  if(MYTHIC_SKINS.includes(id))return {id,price:1000,rarity:"MYTHIQUE"};
- if(RARE_SKINS.includes(id))return {id,price:800,rarity:"RARE"};
- return {id,price:650,rarity:"PREMIUM"};
+ if(RARE_SKINS.includes(id))return {id,price:900,rarity:"RARE"};
+ return {id,price:800,rarity:"PREMIUM"};
 }
 export function getDailyShop(now=Date.now()):DailyShopOffer[]{
  const day=Math.floor(now/DAY), pool=[...SHOP_SKIN_IDS];
@@ -58,7 +58,7 @@ export function getDailyTrailShop(now=Date.now()):DailyTrailOffer[]{
  const day=Math.floor(now/DAY),pool=[...SHOP_TRAIL_IDS];let seed=(day+0x7f4a7c15)>>>0;
  const random=()=>{seed=(seed*1103515245+12345)>>>0;return seed/4294967296;};
  for(let i=pool.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
- return pool.slice(0,3).map((id,index)=>({id,price:index===0?700:index===1?600:500,rarity:(index===0?"RARE":"PREMIUM") as ShopRarity}));
+ return pool.slice(0,3).map((id,index)=>({id,price:index===0?1000:index===1?850:700,rarity:(index===0?"RARE":"PREMIUM") as ShopRarity}));
 }
 export function buyShopTrail(profile:Profile,id:TrailId,now=Date.now()):Profile{
  const offer=getDailyTrailShop(now).find(x=>x.id===id);
