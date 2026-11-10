@@ -16,7 +16,7 @@ export interface GameStats {
 
 type PowerType = "shield" | "slowmo" | "magnet";
 
-export type SkinId = "classic"|"plasma"|"toxic"|"sunset"|"ice"|"void"|"cobalt"|"crimson"|"sandstorm"|"digital"|"carbon"|"royal"|"hazard"|"aurora"|"obsidian"|"titan"|"eclipse"|"inferno"|"overdrive"|"apex"|"warborn"|"headhunter"|"immortal"|"vanguard"|"overlord"|"spectral";
+export type SkinId = "classic"|"plasma"|"toxic"|"sunset"|"ice"|"void"|"cobalt"|"crimson"|"sandstorm"|"digital"|"carbon"|"royal"|"hazard"|"aurora"|"obsidian"|"titan"|"eclipse"|"inferno"|"overdrive"|"apex"|"warborn"|"headhunter"|"immortal"|"vanguard"|"overlord"|"spectral"|"nebula"|"prism"|"royalflare"|"deepsea"|"rosequartz"|"cyberpunk"|"goldrush"|"ghostwire"|"starlight"|"venomwave"|"frostbite"|"bloodmoon"|"neonviper"|"galaxy"|"chromatic"|"sunken"|"emberstorm"|"ultraviolet"|"hologram"|"singularity";
 export const SKINS:{id:SkinId;name:string;unlock:number;bright:string;mid:string;dark:string;glow:string}[]=[
 {id:"classic",name:"CYAN CORE",unlock:1,bright:"#fff",mid:"#a5f3fc",dark:"#0891b2",glow:"#22d3ee"},
 {id:"plasma",name:"PLASMA",unlock:2,bright:"#fff",mid:"#f0abfc",dark:"#a21caf",glow:"#e879f9"},
@@ -43,7 +43,29 @@ export const SKINS:{id:SkinId;name:string;unlock:number;bright:string;mid:string
 {id:"immortal",name:"IMMORTAL",unlock:0,bright:"#ecfeff",mid:"#22d3ee",dark:"#164e63",glow:"#0891b2"},
 {id:"vanguard",name:"VANGUARD",unlock:0,bright:"#d9f99d",mid:"#4ade80",dark:"#14532d",glow:"#16a34a"},
 {id:"overlord",name:"OVERLORD",unlock:0,bright:"#fee2e2",mid:"#dc2626",dark:"#450a0a",glow:"#b91c1c"},
-{id:"spectral",name:"SPECTRAL",unlock:0,bright:"#ecfeff",mid:"#67e8f9",dark:"#164e63",glow:"#06b6d4"}];
+{id:"spectral",name:"SPECTRAL",unlock:0,bright:"#ecfeff",mid:"#67e8f9",dark:"#164e63",glow:"#06b6d4"},
+{id:"nebula",name:"NÉBULEUSE",unlock:0,bright:"#f0abfc",mid:"#a855f7",dark:"#1e1b4b",glow:"#c084fc"},
+{id:"prism",name:"PRISMATIQUE",unlock:0,bright:"#fef08a",mid:"#38bdf8",dark:"#7c3aed",glow:"#67e8f9"},
+{id:"royalflare",name:"FLAMME ROYALE",unlock:0,bright:"#fda4af",mid:"#f97316",dark:"#581c87",glow:"#fb7185"},
+{id:"deepsea",name:"ABYSSE",unlock:0,bright:"#67e8f9",mid:"#0e7490",dark:"#082f49",glow:"#22d3ee"},
+{id:"rosequartz",name:"QUARTZ ROSE",unlock:0,bright:"#fbcfe8",mid:"#e879f9",dark:"#831843",glow:"#f0abfc"},
+{id:"cyberpunk",name:"CYBERPUNK",unlock:0,bright:"#f0abfc",mid:"#ec4899",dark:"#312e81",glow:"#e879f9"},
+{id:"goldrush",name:"RUÉE D'OR",unlock:0,bright:"#fef3c7",mid:"#f59e0b",dark:"#78350f",glow:"#fbbf24"},
+{id:"ghostwire",name:"FIL FANTÔME",unlock:0,bright:"#e0e7ff",mid:"#818cf8",dark:"#1e1b4b",glow:"#a5b4fc"},
+{id:"starlight",name:"POUSSIÈRE D'ÉTOILES",unlock:0,bright:"#fef9c3",mid:"#c084fc",dark:"#312e81",glow:"#c4b5fd"},
+{id:"venomwave",name:"VAGUE TOXIQUE",unlock:0,bright:"#d9f99d",mid:"#14b8a6",dark:"#064e3b",glow:"#2dd4bf"},
+{id:"frostbite",name:"MORSURE GLACÉE",unlock:0,bright:"#e0f2fe",mid:"#38bdf8",dark:"#1e3a8a",glow:"#7dd3fc"},
+{id:"bloodmoon",name:"LUNE SANGUINE",unlock:0,bright:"#fecaca",mid:"#dc2626",dark:"#450a0a",glow:"#ef4444"},
+{id:"neonviper",name:"VIPÈRE NÉON",unlock:0,bright:"#d9f99d",mid:"#a3e635",dark:"#3f6212",glow:"#bef264"},
+{id:"galaxy",name:"GALAXIE",unlock:0,bright:"#f5d0fe",mid:"#6366f1",dark:"#1e1b4b",glow:"#a78bfa"},
+{id:"chromatic",name:"CHROMATIQUE",unlock:0,bright:"#fef08a",mid:"#f472b6",dark:"#2563eb",glow:"#e879f9"},
+{id:"sunken",name:"CITÉ ENGLOUTIE",unlock:0,bright:"#a5f3fc",mid:"#0d9488",dark:"#134e4a",glow:"#5eead4"},
+{id:"emberstorm",name:"TEMPÊTE DE BRAISE",unlock:0,bright:"#fed7aa",mid:"#ea580c",dark:"#7f1d1d",glow:"#fb923c"},
+{id:"ultraviolet",name:"ULTRAVIOLET",unlock:0,bright:"#e9d5ff",mid:"#9333ea",dark:"#3b0764",glow:"#c084fc"},
+{id:"hologram",name:"HOLOGRAMME",unlock:0,bright:"#cffafe",mid:"#a78bfa",dark:"#0f766e",glow:"#67e8f9"},
+{id:"singularity",name:"SINGULARITÉ",unlock:0,bright:"#f5f3ff",mid:"#64748b",dark:"#111827",glow:"#c4b5fd"}];
+
+export const SHOP_SKIN_IDS: SkinId[] = ["nebula","prism","royalflare","deepsea","rosequartz","cyberpunk","goldrush","ghostwire","starlight","venomwave","frostbite","bloodmoon","neonviper","galaxy","chromatic","sunken","emberstorm","ultraviolet","hologram","singularity"];
 
 interface Spike {
   cy: number;
