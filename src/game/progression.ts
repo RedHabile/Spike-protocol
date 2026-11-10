@@ -1,4 +1,4 @@
-import type { SkinId } from "./engine";
+import { SHOP_SKIN_IDS, type SkinId } from "./engine";
 export type QuestId = "runs" | "shards" | "score" | "survive" | "record" | "highscore";
 export type AchievementId = "first_run" | "score_25" | "score_75" | "score_150" | "shard_hunter" | "survivor" | "ten_runs" | "record_100" | "level_20";
 export interface DailyQuest { id: QuestId; title: string; description: string; target: number; reward: number; metric: QuestId; }
@@ -36,5 +36,22 @@ export function saveProfile(p:Profile){try{localStorage.setItem("spike-profile",
 export function ensureDaily(p:Profile,now=Date.now()):Profile{return now<p.quest.resetAt+DAY?p:{...p,quest:fresh(now)};}
 export function remaining(p:Profile,now=Date.now()){return Math.max(0,p.quest.resetAt+DAY-now);}
 export function recordRun(profile:Profile,r:{score:number;shards:number;time:number}){const p=ensureDaily(profile);const xpEarned=Math.max(0,Math.floor(r.score));const xp=p.xp+xpEarned,runs=p.runs+1,totalShards=p.totalShards+r.shards,best=Math.max(p.best,r.score),longestRun=Math.max(p.longestRun,r.time),level=levelForXp(xp);const values={runs,best,shards:totalShards,time:longestRun,level};const newly=ACHIEVEMENTS.filter(a=>!p.unlockedAchievements.includes(a.id)&&values[a.metric]>=a.target);const unlockedAchievements=[...p.unlockedAchievements,...newly.map(a=>a.id)];const quest={...p.quest,progress:{...p.quest.progress,runs:p.quest.progress.runs+1,shards:p.quest.progress.shards+r.shards,score:Math.max(p.quest.progress.score,r.score),survive:Math.max(p.quest.progress.survive,Math.floor(r.time)),record:Math.max(p.quest.progress.record,best),highscore:Math.max(p.quest.progress.highscore,r.score)}};return{profile:{...p,xp,runs,totalShards,best,longestRun,unlockedAchievements,unlockedSkins:Array.from(new Set([...p.unlockedSkins,...LEVEL_SKINS.filter(x=>level>=x.level).map(x=>x.id),...newly.map(a=>a.skin)])),quest},xpEarned,unlocked:newly.map(a=>a.id)};}
+
+export interface DailyShopOffer { id:SkinId; price:number; }
+const SHOP_PRICES=[1200,1450,1700,1950,2200,2500,2800];
+export function getDailyShop(now=Date.now()):DailyShopOffer[]{
+ const day=Math.floor(now/DAY), pool=[...SHOP_SKIN_IDS];
+ let seed=(day+0x9e3779b9)>>>0;
+ const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
+ for(let i=pool.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+ return pool.slice(0,3).map((id,index)=>({id,price:SHOP_PRICES[Math.floor(random()*SHOP_PRICES.length)]}));
+}
+export function shopRemaining(now=Date.now()){return DAY-(now%DAY);}
+export function buyShopSkin(profile:Profile,id:SkinId,now=Date.now()):Profile{
+ const offer=getDailyShop(now).find(x=>x.id===id);
+ if(!offer||profile.unlockedSkins.includes(id)||profile.credits<offer.price)return profile;
+ return {...profile,credits:profile.credits-offer.price,unlockedSkins:[...profile.unlockedSkins,id]};
+}
+
 export function questComplete(p:Profile,id:QuestId){const q=DAILY_QUESTS.find(x=>x.id===id);return !!q&&p.quest.progress[id]>=q.target;}
 export function claimQuest(p:Profile,id:QuestId):Profile{const q=DAILY_QUESTS.find(x=>x.id===id);if(!q||!p.quest.active.includes(id)||p.quest.claimed.includes(id)||!questComplete(p,id))return p;return{...p,credits:p.credits+q.reward,quest:{...p.quest,claimed:[...p.quest.claimed,id]}};}
