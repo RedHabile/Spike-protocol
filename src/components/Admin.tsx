@@ -2,9 +2,12 @@ import { useState } from "react";
 import { LockKeyhole, X, ShieldCheck } from "lucide-react";
 import { runAdminAction } from "../game/cloud";
 
+const ADMIN_EMAIL="ethan.ventre2411@gmail.com";
+
 const skins=["classic","plasma","toxic","sunset","ice","void","cobalt","crimson","sandstorm","digital","carbon","royal","hazard","aurora","obsidian","titan","eclipse","inferno","overdrive","apex","warborn","headhunter","immortal","vanguard","overlord","spectral","nebula","prism","royalflare","deepsea","rosequartz","cyberpunk","goldrush","ghostwire","starlight","venomwave","frostbite","bloodmoon","neonviper","galaxy","chromatic","sunken","emberstorm","ultraviolet","hologram","singularity"];
 
 export function AdminPanel({user}:{user:{id:string;email?:string}|null}) {
+ if (user?.email?.trim().toLowerCase() !== ADMIN_EMAIL) return null;
  const [open,setOpen]=useState(false),[code,setCode]=useState(""),[email,setEmail]=useState(""),[kind,setKind]=useState<"credits"|"xp"|"skin_add"|"skin_remove"|"skin_all">("credits"),[amount,setAmount]=useState("100"),[direction,setDirection]=useState<"add"|"remove">("add"),[skin,setSkin]=useState("plasma"),[busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState("");
  const submit=async()=>{
   setBusy(true);setMessage("");setError("");
