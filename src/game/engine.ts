@@ -731,13 +731,14 @@ export class GameEngine {
     p.dir = newDir;
     p.x = newX;
     p.squash = 0.5;
-    this.score++;
+    const wallPoints = p.doubleT > 0 ? 2 : 1;
+    this.score += wallPoints;
     this.sound.bounce();
     if (newDir === 1) this.wallFlashL = 1;
     else this.wallFlashR = 1;
     this.shake = Math.max(this.shake, 2.6);
     this.burst(newX === arena.x + this.r() ? arena.x : arena.x + arena.w, p.y, 7, "#22d3ee", 170 * u, 0.4, 2.2 * u, Math.PI * 0.8, newDir === 1 ? 0 : Math.PI);
-    this.float(p.x + newDir * 20 * u, p.y - 14 * u, "+1", "#67e8f9", 14 * this.uh + 3);
+    this.float(p.x + newDir * 20 * u, p.y - 14 * u, `+${wallPoints}`, p.doubleT > 0 ? "#fb7185" : "#67e8f9", 14 * this.uh + 3);
     this.spikesL = this.genWall(p.y);
     this.spikesR = this.genWall(p.y);
     this.checkBest();
