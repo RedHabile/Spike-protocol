@@ -113,3 +113,16 @@ export async function saveCloudProfile(userId: string, profile: Profile): Promis
   });
   if (!response.ok) throw await responseError(response);
 }
+
+
+export async function runAdminAction(input:{code:string;email:string;operation:"credits"|"xp"|"skin_add"|"skin_remove";amount?:number;skin?:string}):Promise<{success:boolean;player?:string;profile?:{xp:number;credits:number;unlockedSkins:string[]};error?:string}> {
+  const session = await validSession();
+  const response = await fetch(`${PROJECT_URL}/functions/v1/spike-admin`, {
+    method:"POST",
+    headers:{...headers(session.access_token)},
+    body:JSON.stringify(input),
+  });
+  const data = await response.json().catch(()=>({}));
+  if (!response.ok) throw new Error(data.error || `Erreur admin (${response.status}).`);
+  return data;
+}
