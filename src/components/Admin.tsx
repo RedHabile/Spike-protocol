@@ -19,7 +19,7 @@ export function AdminPanel({user}:{user:{id:string;email?:string}|null}) {
   finally { setBusy(false); }
  };
  return <>
-  <button onClick={()=>{setOpen(true);setError("");setMessage("");}} className="cyber-btn cyber-btn-ghost fixed bottom-5 right-5 z-50 flex max-w-[calc(100vw-2.5rem)] items-center gap-2 px-3 py-2 font-mono text-[9px] tracking-wider"><LockKeyhole className="h-3.5 w-3.5 text-amber-300"/>ADMIN</button>
+  <button onClick={()=>{setOpen(true);setError("");setMessage("");}} className="cyber-btn cyber-btn-ghost fixed right-3 top-28 z-50 flex items-center gap-2 border border-amber-300/50 bg-slate-950/95 px-3 py-2.5 font-mono text-[9px] tracking-[0.18em] text-amber-200 shadow-[0_0_18px_rgba(251,191,36,0.16)] transition-all hover:border-amber-200 hover:bg-amber-300/10 hover:shadow-[0_0_24px_rgba(251,191,36,0.3)] sm:right-16 sm:top-5"><LockKeyhole className="h-3.5 w-3.5 text-amber-300"/>ADMIN</button>
   {open&&<div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-label="Panneau administrateur">
    <div className="cyber-panel w-full max-w-md border-amber-300/40 p-5">
     <div className="mb-4 flex items-center justify-between border-b border-amber-300/20 pb-3"><div><div className="flex items-center gap-2 font-mono text-[9px] tracking-[0.3em] text-amber-300"><ShieldCheck className="h-3.5 w-3.5"/>ACCÈS RESTREINT</div><h2 className="mt-1 font-display text-2xl font-bold text-slate-100">ADMINISTRATEUR</h2></div><button onClick={()=>setOpen(false)} aria-label="Fermer" className="cyber-btn cyber-btn-ghost flex h-9 w-9 items-center justify-center"><X className="h-4 w-4"/></button></div>
