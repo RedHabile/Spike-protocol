@@ -80,14 +80,14 @@ export async function loadPlaytimeLeaderboard(): Promise<PlaytimeEntry[]> {
   return response.json() as Promise<PlaytimeEntry[]>;
 }
 
-export async function recordPlaytime(seconds: number): Promise<void> {
+export async function recordPlaytime(seconds: number, accountId?: string): Promise<void> {
   const safeSeconds = Math.floor(seconds);
   if (!leaderboardConfigured || !Number.isFinite(safeSeconds) || safeSeconds < 1) return;
   const response = await fetch(`${url}/rest/v1/rpc/submit_spike_playtime`, {
     method: "POST",
     headers: headers(),
     body: JSON.stringify({
-      p_player_id: playerId(),
+      p_player_id: accountId || playerId(),
       p_player_name: getPlayerName(),
       p_seconds: Math.min(safeSeconds, 3600),
     }),
