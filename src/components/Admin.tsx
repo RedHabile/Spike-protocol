@@ -9,7 +9,7 @@ const trails=["comet","lightning","embers","prism","glitch","aurora","void","sta
 
 export function AdminPanel({user}:{user:{id:string;email?:string}|null}) {
  if (user?.email?.trim().toLowerCase() !== ADMIN_EMAIL) return null;
- const [open,setOpen]=useState(false),[code,setCode]=useState(""),[email,setEmail]=useState(""),[kind,setKind]=useState<"credits"|"xp"|"skin_add"|"skin_remove"|"skin_all"|"trail_add"|"trail_remove"|"trail_all">("credits"),[amount,setAmount]=useState("100"),[direction,setDirection]=useState<"add"|"remove">("add"),[skin,setSkin]=useState("plasma"),[trail,setTrail]=useState("lightning"),[busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState("");
+ const [open,setOpen]=useState(false),[code,setCode]=useState(""),[email,setEmail]=useState(""),[kind,setKind]=useState<"credits"|"xp"|"skin_add"|"skin_remove"|"skin_all"|"trail_add"|"trail_remove"|"trail_all"|"reset_inventory">("credits"),[amount,setAmount]=useState("100"),[direction,setDirection]=useState<"add"|"remove">("add"),[skin,setSkin]=useState("plasma"),[trail,setTrail]=useState("lightning"),[busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState("");
  const submit=async()=>{
   if(kind==="reset_inventory"&&!window.confirm("Confirmer : retirer tous les skins et mettre les crédits de ce joueur à 0 ? Cette action est irréversible.")) return;
   setBusy(true);setMessage("");setError("");
