@@ -30,7 +30,7 @@ export default function App(){
   engineRef.current=engine;engine.setSkin(selectedSkin);engine.setTrail(profile.equippedTrail);setMuted(engine.isMuted);
   return()=>{engine.destroy();engineRef.current=null;};
  },[]);
- const flushPlaytime=useCallback(()=>{const started=playtimeStartedAt.current;if(started===null)return;const seconds=Math.floor((Date.now()-started)/1000);if(seconds<1)return;playtimeStartedAt.current=Date.now();void recordPlaytime(seconds).catch(error=>console.warn("Temps de jeu Spike Protocol :",error));},[]);
+ const flushPlaytime=useCallback(()=>{const started=playtimeStartedAt.current;if(started===null)return;const seconds=Math.floor((Date.now()-started)/1000);if(seconds<1)return;playtimeStartedAt.current=Date.now();void recordPlaytime(seconds,accountRef.current?.id).catch(error=>console.warn("Temps de jeu Spike Protocol :",error));},[]);
  useEffect(()=>{if(uiState!=="playing")return;playtimeStartedAt.current=Date.now();const interval=window.setInterval(flushPlaytime,30000);const onPageHide=()=>flushPlaytime();window.addEventListener("pagehide",onPageHide);return()=>{window.clearInterval(interval);window.removeEventListener("pagehide",onPageHide);flushPlaytime();playtimeStartedAt.current=null;};},[uiState,flushPlaytime]);
  const handleStart=useCallback(()=>engineRef.current?.start(),[]);
  const handleSelectSkin=useCallback((id:SkinId)=>{if(!profileRef.current.unlockedSkins.includes(id))return;const next={...profileRef.current,equippedSkin:id};updateProfile(next);engineRef.current?.setSkin(id);},[]);
