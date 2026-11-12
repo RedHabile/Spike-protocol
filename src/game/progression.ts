@@ -24,9 +24,9 @@ export interface Profile { xp:number; credits:number; runs:number; totalShards:n
 const DAY=86400000;
 const empty=():Record<QuestId,number>=>({runs:0,shards:0,score:0,survive:0,record:0,highscore:0});
 function fresh(now=Date.now()){const pool=[...DAILY_QUESTS];for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}return{resetAt:now,active:pool.slice(0,3).map(q=>q.id),progress:empty(),claimed:[] as QuestId[]};}
-// Le niveau 1 demande 250 XP pour atteindre le niveau 2.
-// Chaque niveau suivant coûte 25 % de plus que le précédent.
-export const xpForNextLevel=(level:number)=>Math.ceil(250*Math.pow(1.25,Math.max(0,level-1)));
+// Progression adoucie : 100 XP pour le niveau 2, puis +10 % par niveau.
+// Le niveau 20 devient beaucoup plus accessible sans bloquer la progression après le niveau 21.
+export const xpForNextLevel=(level:number)=>Math.ceil(100*Math.pow(1.10,Math.max(0,level-1)));
 export const xpRequiredForLevel=(level:number)=>{let total=0;for(let current=1;current<Math.max(1,level);current++)total+=xpForNextLevel(current);return total;};
 export const levelForXp=(xp:number)=>{let level=1,remaining=Math.max(0,xp);while(remaining>=xpForNextLevel(level)){remaining-=xpForNextLevel(level);level++;}return level;};
 export const xpIntoLevel=(xp:number)=>Math.max(0,xp-xpRequiredForLevel(levelForXp(xp)));
