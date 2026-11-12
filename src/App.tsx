@@ -3,7 +3,7 @@ import { Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { GameEngine, type GameState, type GameStats, type SkinId, type TrailId } from "./game/engine";
 import { GameOverScreen, PauseScreen, StartScreen } from "./components/Screens";
 import { buyShopSkin, buyShopTrail, claimQuest, createProfile, ensureDaily, loadProfile, recordRun, remaining, saveProfile, type Profile, type QuestId } from "./game/progression";
-import { submitBestScore } from "./game/leaderboard";
+import { recordPlaytime, submitBestScore } from "./game/leaderboard";
 import { restoreAccount, loadCloudProfile, saveCloudProfile, type AuthUser } from "./game/cloud";
 import { AccountWidget } from "./components/Account";
 import { AdminPanel } from "./components/Admin";
@@ -14,7 +14,7 @@ export default function App(){
  const [uiState,setUiState]=useState<GameState>("menu"),[stats,setStats]=useState<GameStats|null>(null),[muted,setMuted]=useState(false);
  const [profile,setProfile]=useState<Profile>(()=>loadProfile()),[clock,setClock]=useState(Date.now());
  const [account,setAccount]=useState<AuthUser|null>(null);
- const profileRef=useRef(profile),accountRef=useRef<AuthUser|null>(null),syncTimerRef=useRef<number|undefined>(undefined);
+ const profileRef=useRef(profile),accountRef=useRef<AuthUser|null>(null),syncTimerRef=useRef<number|undefined>(undefined),playtimeStartedAt=useRef<number|null>(null);
  const updateProfile=(next:Profile)=>{profileRef.current=next;setProfile(next);saveProfile(next);const userId=accountRef.current?.id;if(userId){window.clearTimeout(syncTimerRef.current);syncTimerRef.current=window.setTimeout(()=>{void saveCloudProfile(userId,next).catch(error=>console.warn("Synchronisation Spike Protocol :",error));},500);}};
  const selectedSkin=profile.equippedSkin;
  const handleAuthenticated=useCallback(async(user:AuthUser)=>{accountRef.current=user;setAccount(user);window.clearTimeout(syncTimerRef.current);const remote=await loadCloudProfile(user.id);if(remote){try{localStorage.setItem("spike-profile-owner",user.id);}catch{}profileRef.current=remote;setProfile(remote);saveProfile(remote);engineRef.current?.setSkin(remote.equippedSkin);engineRef.current?.setTrail(remote.equippedTrail);}else{let owner:string|null=null;try{owner=localStorage.getItem("spike-profile-owner");}catch{}const startingProfile=owner&&owner!==user.id?createProfile():profileRef.current;profileRef.current=startingProfile;setProfile(startingProfile);saveProfile(startingProfile);try{localStorage.setItem("spike-profile-owner",user.id);}catch{}await saveCloudProfile(user.id,startingProfile);}},[]);
@@ -30,6 +30,8 @@ export default function App(){
   engineRef.current=engine;engine.setSkin(selectedSkin);engine.setTrail(profile.equippedTrail);setMuted(engine.isMuted);
   return()=>{engine.destroy();engineRef.current=null;};
  },[]);
+ const flushPlaytime=useCallback(()=>{const started=playtimeStartedAt.current;if(started===null)return;const seconds=Math.floor((Date.now()-started)/1000);if(seconds<1)return;playtimeStartedAt.current=Date.now();void recordPlaytime(seconds).catch(error=>console.warn("Temps de jeu Spike Protocol :",error));},[]);
+ useEffect(()=>{if(uiState!=="playing")return;playtimeStartedAt.current=Date.now();const interval=window.setInterval(flushPlaytime,30000);const onPageHide=()=>flushPlaytime();window.addEventListener("pagehide",onPageHide);return()=>{window.clearInterval(interval);window.removeEventListener("pagehide",onPageHide);flushPlaytime();playtimeStartedAt.current=null;};},[uiState,flushPlaytime]);
  const handleStart=useCallback(()=>engineRef.current?.start(),[]);
  const handleSelectSkin=useCallback((id:SkinId)=>{if(!profileRef.current.unlockedSkins.includes(id))return;const next={...profileRef.current,equippedSkin:id};updateProfile(next);engineRef.current?.setSkin(id);},[]);
  const handleBuySkin=useCallback((id:SkinId)=>{const next=buyShopSkin(profileRef.current,id);if(next!==profileRef.current)updateProfile(next);},[]);
