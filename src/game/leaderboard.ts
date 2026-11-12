@@ -1,4 +1,5 @@
 export interface LeaderboardEntry { player_name: string; best_score: number; updated_at?: string; }
+export interface PlaytimeEntry { player_name: string; total_seconds: number; updated_at?: string; }
 
 const STORAGE_ID = "spike-player-id";
 const STORAGE_NAME = "spike-player-name";
@@ -67,5 +68,32 @@ export async function submitBestScore(score: number): Promise<void> {
   if (!response.ok) {
     const detail = await response.text().catch(() => "");
     throw new Error(detail || "Envoi du score impossible.");
+  }
+}
+
+
+export async function loadPlaytimeLeaderboard(): Promise<PlaytimeEntry[]> {
+  const response = await fetch(`${url}/rest/v1/playtime_leaderboard?select=player_name,total_seconds,updated_at&order=total_seconds.desc&limit=100`, {
+    headers: headers(),
+  });
+  if (!response.ok) throw new Error("Impossible de charger le classement du temps de jeu.");
+  return response.json() as Promise<PlaytimeEntry[]>;
+}
+
+export async function recordPlaytime(seconds: number): Promise<void> {
+  const safeSeconds = Math.floor(seconds);
+  if (!leaderboardConfigured || !Number.isFinite(safeSeconds) || safeSeconds < 1) return;
+  const response = await fetch(`${url}/rest/v1/rpc/submit_spike_playtime`, {
+    method: "POST",
+    headers: headers(),
+    body: JSON.stringify({
+      p_player_id: playerId(),
+      p_player_name: getPlayerName(),
+      p_seconds: Math.min(safeSeconds, 3600),
+    }),
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(detail || "Enregistrement du temps de jeu impossible.");
   }
 }
