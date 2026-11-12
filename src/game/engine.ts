@@ -16,8 +16,8 @@ export interface GameStats {
 
 type PowerType = "shield" | "slowmo" | "magnet" | "phase" | "double";
 
-export type SkinId = "classic"|"plasma"|"toxic"|"sunset"|"ice"|"void"|"cobalt"|"crimson"|"sandstorm"|"digital"|"carbon"|"royal"|"hazard"|"aurora"|"obsidian"|"titan"|"eclipse"|"inferno"|"overdrive"|"apex"|"warborn"|"headhunter"|"immortal"|"vanguard"|"overlord"|"spectral"|"nebula"|"prism"|"royalflare"|"deepsea"|"rosequartz"|"cyberpunk"|"goldrush"|"ghostwire"|"starlight"|"venomwave"|"frostbite"|"bloodmoon"|"neonviper"|"galaxy"|"chromatic"|"sunken"|"emberstorm"|"ultraviolet"|"hologram"|"singularity";
-export type TrailId = "comet"|"lightning"|"embers"|"prism"|"glitch"|"aurora"|"void"|"stardust"|"rainbow"|"toxicmist"|"pinknova"|"blueflame"|"sunflare"|"pixelstorm"|"moonlight"|"dragon"|"sakura"|"electric"|"arctic"|"golden"|"cyberstream"|"blackhole"|"dreamwave"|"lavacosmic";
+export type SkinId = "classic"|"plasma"|"toxic"|"sunset"|"ice"|"void"|"cobalt"|"crimson"|"sandstorm"|"digital"|"carbon"|"royal"|"hazard"|"aurora"|"obsidian"|"titan"|"eclipse"|"inferno"|"overdrive"|"apex"|"warborn"|"headhunter"|"immortal"|"vanguard"|"overlord"|"spectral"|"nebula"|"prism"|"royalflare"|"deepsea"|"rosequartz"|"cyberpunk"|"goldrush"|"ghostwire"|"starlight"|"venomwave"|"frostbite"|"bloodmoon"|"neonviper"|"galaxy"|"chromatic"|"sunken"|"emberstorm"|"ultraviolet"|"hologram"|"singularity"|"streakskin"|"cybernova"|"ionstorm"|"phantomx"|"radiant"|"abyssal"|"matrix"|"novaedge"|"paradox"|"overclock";
+export type TrailId = "comet"|"lightning"|"embers"|"prism"|"glitch"|"aurora"|"void"|"stardust"|"rainbow"|"toxicmist"|"pinknova"|"blueflame"|"sunflare"|"pixelstorm"|"moonlight"|"dragon"|"sakura"|"electric"|"arctic"|"golden"|"cyberstream"|"blackhole"|"dreamwave"|"lavacosmic"|"streaktrail"|"iontrail"|"nebularush"|"glacier"|"voltage"|"spectraltrail"|"quantum"|"starfall";
 export const TRAILS:{id:TrailId;name:string;colors:string[];glow:string;style:"smooth"|"dash"|"spark"|"ribbon"}[]=[
 {id:"comet",name:"COMÈTE",colors:["#fff","#67e8f9","#0891b2"],glow:"#22d3ee",style:"smooth"},
 {id:"lightning",name:"ÉCLAIR",colors:["#fff","#fef08a","#eab308"],glow:"#facc15",style:"dash"},
@@ -42,7 +42,15 @@ export const TRAILS:{id:TrailId;name:string;colors:string[];glow:string;style:"s
 {id:"sakura",name:"SAKURA",colors:["#fff1f2","#f9a8d4","#be185d"],glow:"#f9a8d4",style:"spark"},
 {id:"blackhole",name:"TROU NOIR",colors:["#e9d5ff","#6d28d9","#020617"],glow:"#8b5cf6",style:"smooth"},
 {id:"dreamwave",name:"DREAMWAVE",colors:["#c4b5fd","#f9a8d4","#67e8f9"],glow:"#c084fc",style:"ribbon"},
-{id:"lavacosmic",name:"LAVE COSMIQUE",colors:["#fed7aa","#f97316","#7f1d1d"],glow:"#fb923c",style:"spark"}
+{id:"lavacosmic",name:"LAVE COSMIQUE",colors:["#fed7aa","#f97316","#7f1d1d"],glow:"#fb923c",style:"spark"},
+{id:"streaktrail",name:"TRAÎNÉE STELLAIRE",colors:["#fff","#60a5fa","#4338ca"],glow:"#93c5fd",style:"dash"},
+{id:"iontrail",name:"IONISATION",colors:["#f0fdfa","#2dd4bf","#0f766e"],glow:"#5eead4",style:"spark"},
+{id:"nebularush",name:"RUÉE NÉBULEUSE",colors:["#f5d0fe","#c084fc","#4c1d95"],glow:"#d8b4fe",style:"ribbon"},
+{id:"glacier",name:"GLACIER",colors:["#fff","#7dd3fc","#1e40af"],glow:"#bae6fd",style:"smooth"},
+{id:"voltage",name:"HAUTE TENSION",colors:["#fef08a","#eab308","#7c3aed"],glow:"#fde047",style:"dash"},
+{id:"spectraltrail",name:"SPECTRE",colors:["#f0abfc","#818cf8","#22d3ee"],glow:"#c4b5fd",style:"ribbon"},
+{id:"quantum",name:"QUANTIQUE",colors:["#fff","#34d399","#0e7490"],glow:"#6ee7b7",style:"spark"},
+{id:"starfall",name:"PLUIE D'ÉTOILES",colors:["#fff","#f9a8d4","#7c3aed"],glow:"#f0abfc",style:"smooth"}
 ];
 export const SHOP_TRAIL_IDS:TrailId[]=["rainbow","pinknova","blueflame","sunflare","pixelstorm","dragon","golden","cyberstream","sakura","blackhole","dreamwave","lavacosmic"];
 export const SKINS:{id:SkinId;name:string;unlock:number;bright:string;mid:string;dark:string;glow:string}[]=[
@@ -91,7 +99,17 @@ export const SKINS:{id:SkinId;name:string;unlock:number;bright:string;mid:string
 {id:"emberstorm",name:"TEMPÊTE DE BRAISE",unlock:0,bright:"#fed7aa",mid:"#ea580c",dark:"#7f1d1d",glow:"#fb923c"},
 {id:"ultraviolet",name:"ULTRAVIOLET",unlock:0,bright:"#e9d5ff",mid:"#9333ea",dark:"#3b0764",glow:"#c084fc"},
 {id:"hologram",name:"HOLOGRAMME",unlock:0,bright:"#cffafe",mid:"#a78bfa",dark:"#0f766e",glow:"#67e8f9"},
-{id:"singularity",name:"SINGULARITÉ",unlock:0,bright:"#f5f3ff",mid:"#64748b",dark:"#111827",glow:"#c4b5fd"}];
+{id:"singularity",name:"SINGULARITÉ",unlock:0,bright:"#f5f3ff",mid:"#64748b",dark:"#111827",glow:"#c4b5fd"},
+{id:"streakskin",name:"STREAK",unlock:0,bright:"#fff",mid:"#60a5fa",dark:"#1e3a8a",glow:"#93c5fd"},
+{id:"cybernova",name:"CYBER NOVA",unlock:0,bright:"#fce7f3",mid:"#d946ef",dark:"#581c87",glow:"#e879f9"},
+{id:"ionstorm",name:"ION STORM",unlock:0,bright:"#ccfbf1",mid:"#14b8a6",dark:"#134e4a",glow:"#5eead4"},
+{id:"phantomx",name:"PHANTOM X",unlock:0,bright:"#e0e7ff",mid:"#818cf8",dark:"#1e1b4b",glow:"#a5b4fc"},
+{id:"radiant",name:"RADIANT",unlock:0,bright:"#fef9c3",mid:"#f59e0b",dark:"#78350f",glow:"#fbbf24"},
+{id:"abyssal",name:"ABYSSAL",unlock:0,bright:"#cffafe",mid:"#0891b2",dark:"#082f49",glow:"#22d3ee"},
+{id:"matrix",name:"MATRIX",unlock:0,bright:"#dcfce7",mid:"#22c55e",dark:"#14532d",glow:"#4ade80"},
+{id:"novaedge",name:"NOVA EDGE",unlock:0,bright:"#ffe4e6",mid:"#f43f5e",dark:"#881337",glow:"#fb7185"},
+{id:"paradox",name:"PARADOXE",unlock:0,bright:"#ede9fe",mid:"#8b5cf6",dark:"#312e81",glow:"#a78bfa"},
+{id:"overclock",name:"OVERCLOCK",unlock:0,bright:"#fef3c7",mid:"#f97316",dark:"#7c2d12",glow:"#fb923c"}];
 
 export const SHOP_SKIN_IDS: SkinId[] = ["nebula","prism","royalflare","deepsea","rosequartz","cyberpunk","goldrush","ghostwire","starlight","venomwave","frostbite","bloodmoon","neonviper","galaxy","chromatic","sunken","emberstorm","ultraviolet","hologram","singularity"];
 
