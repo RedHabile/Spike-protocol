@@ -15,9 +15,10 @@ export function AdminPanel({user}:{user:{id:string;email?:string}|null}) {
   if(kind==="trail_remove_all"&&!window.confirm("Confirmer : retirer toutes les traînées de ce joueur ? Seule la traînée de base COMET sera conservée.")) return;
   setBusy(true);setMessage("");setError("");
   try {
-   let result;
+   let result: Awaited<ReturnType<typeof runAdminAction>> | null = null;
    if(kind==="trail_remove_all") {
     for(const id of trails.filter(id=>id!=="comet")) result=await runAdminAction({code,email,operation:"trail_remove",trail:id});
+    if(!result) throw new Error("Aucune traînée à retirer.");
    } else {
     result=await runAdminAction({code,email,operation:kind,amount:kind==="credits"||kind==="xp"?(Number(amount)*(direction==="add"?1:-1)):undefined,skin:kind==="skin_add"||kind==="skin_remove"?skin:undefined,trail:kind==="trail_add"||kind==="trail_remove"?trail:undefined});
    }
