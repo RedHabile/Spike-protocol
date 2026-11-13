@@ -465,19 +465,20 @@ export class GameEngine {
 
   private genWall(safeY?: number): Spike[] {
     const s = this.score;
-    // courbe adoucie : +1 pointe tous les 8 points, début très léger
-    const target = clamp(1 + Math.floor(s / 8) + (Math.random() < 0.45 ? 1 : 0), s < 3 ? 1 : 2, 8);
+    // Densité plus agressive : les pointes se multiplient plus vite.
+    const target = clamp(2 + Math.floor(s / 6) + (Math.random() < 0.6 ? 1 : 0), 2, 9);
     const spikes: Spike[] = [];
     const { arena, u } = this;
-    const corridor = 62 * u;
+    // Les pointes peuvent désormais apparaître près du plafond et du sol.
+    // Le petit couloir autour du joueur évite seulement les apparitions injustes.
+    const corridor = 24 * u;
     let guard = 0;
-    while (spikes.length < target && guard++ < 80) {
-      const cy = rand(arena.y + 74 * u, arena.y + arena.h - 74 * u);
-      // couloir de sécurité autour de l'altitude du joueur (anti mort instantanée)
+    while (spikes.length < target && guard++ < 160) {
+      const cy = rand(arena.y + 34 * u, arena.y + arena.h - 34 * u);
       if (safeY !== undefined && Math.abs(cy - safeY) < corridor) continue;
-      const ok = spikes.every((sp) => Math.abs(sp.cy - cy) > 34 * u);
+      const ok = spikes.every((sp) => Math.abs(sp.cy - cy) > 30 * u);
       if (!ok) continue;
-      spikes.push({ cy, len: rand(24, 33) * u, wid: 26 * u, t: 0 });
+      spikes.push({ cy, len: rand(29, 39) * u, wid: 30 * u, t: 0 });
     }
     return spikes;
   }
