@@ -877,6 +877,7 @@ export class GameEngine {
       level: this.level,
       rank: rankFor(this.score),
       xpEarned: 0,
+      creditsEarned: 0,
     };
     this.onState("gameover", stats);
   }
