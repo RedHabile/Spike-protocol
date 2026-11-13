@@ -25,7 +25,7 @@ export default function App(){
   const canvas=canvasRef.current;if(!canvas)return;
   const engine=new GameEngine(canvas,(state,s)=>{
    setUiState(state);
-   if(state==="gameover"&&s){const result=recordRun(profileRef.current,s);updateProfile(result.profile);void submitBestScore(s.score).catch(error=>console.warn("Classement Spike Protocol :",error));setStats({...s,xpEarned:result.xpEarned});}
+   if(state==="gameover"&&s){const result=recordRun(profileRef.current,s);updateProfile(result.profile);void submitBestScore(s.score).catch(error=>console.warn("Classement Spike Protocol :",error));setStats({...s,xpEarned:result.xpEarned,creditsEarned:result.creditsEarned});}
   });
   engineRef.current=engine;engine.setSkin(selectedSkin);engine.setTrail(profile.equippedTrail);setMuted(engine.isMuted);
   return()=>{engine.destroy();engineRef.current=null;};
