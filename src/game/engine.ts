@@ -568,15 +568,24 @@ export class GameEngine {
   private loop = (): void => {
     if (this.destroyed) return;
     const now = performance.now();
-    // Ne pas plafonner le delta à 25 ms : sur un appareil à 30 FPS ou moins,
-    // cela faisait tourner toute la simulation au ralenti.
-    // Le plafond à 100 ms évite seulement les grands sauts après un blocage.
-    const dt = clamp((now - this.lastT) / 1000, 0, 0.1);
+    // Le mode économie d'énergie peut espacer fortement les frames.
+    // On conserve le temps réellement écoulé, puis on le simule en petites
+    // étapes pour éviter à la fois le ralenti et les traversées de collisions.
+    // Le plafond de 500 ms ne concerne que les blocages ponctuels du navigateur.
+    const elapsed = clamp((now - this.lastT) / 1000, 0, 0.5);
     this.lastT = now;
 
     if (this.state !== "paused") {
-      this.bgTime += dt;
-      if (this.state === "playing") this.update(dt);
+      this.bgTime += elapsed;
+      if (this.state === "playing" && elapsed > 0) {
+        const maxStep = 1 / 60;
+        let remaining = elapsed;
+        while (remaining > 0) {
+          const step = Math.min(remaining, maxStep);
+          this.update(step);
+          remaining -= step;
+        }
+      }
     }
     this.render();
     this.raf = requestAnimationFrame(this.loop);
