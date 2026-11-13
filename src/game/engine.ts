@@ -172,7 +172,7 @@ const TAU = Math.PI * 2;
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const GLYPHS = "01ΣΩ∆#%&$@!?<>/|=+*×¤§µ";
-const THREAT_STEPS = [0, 8, 18, 32, 50, 72, 100, 135];
+const THREAT_STEPS = [0, 6, 14, 25, 38, 54, 72, 94];
 const BACKGROUND_THEMES = [
   { score: 0, top: "#020711", mid: "#071827", bottom: "#02040b", halo: "rgba(34,211,238,0.12)", grid: "rgba(103,232,249,0.08)", data: "34,211,238", style: "circuit" },
   { score: 10, top: "#160522", mid: "#351044", bottom: "#090313", halo: "rgba(232,60,255,0.20)", grid: "rgba(232,121,249,0.10)", data: "232,121,249", style: "stars" },
@@ -454,14 +454,14 @@ export class GameEngine {
 
   private speed(): number {
     // Chaque niveau de menace augmente nettement la vitesse, sans plafond trop précoce.
-    const s = (290 + this.score * 2.1) * (1 + this.level * 0.075);
+    const s = (310 + this.score * 2.35) * (1 + this.level * 0.095);
     return Math.min(s, 760) * this.u;
   }
 
   /** Délai d'armement des pointes — plus long en début de partie. */
   private armTime(): number {
     // Les pointes s'arment de plus en plus vite à mesure que la menace grimpe.
-    return Math.max(0.16, 0.34 + Math.max(0, 24 - this.score) * 0.005 - this.level * 0.027);
+    return Math.max(0.16, 0.31 + Math.max(0, 18 - this.score) * 0.004 - this.level * 0.032);
   }
 
   /* ─── Génération ───────────────────────────────────────────────── */
@@ -469,20 +469,20 @@ export class GameEngine {
   private genWall(safeY?: number): Spike[] {
     const s = this.score;
     // La menace pilote directement la densité : chaque palier ajoute des obstacles.
-    const target = clamp(2 + Math.floor(this.level * 0.9) + Math.floor(s / 28) + (Math.random() < 0.65 ? 1 : 0), 2, 14);
+    const target = clamp(3 + Math.floor(this.level * 1.05) + Math.floor(s / 24) + (Math.random() < 0.75 ? 1 : 0), 3, 16);
     const spikes: Spike[] = [];
     const { arena, u } = this;
     // Le couloir de sécurité se resserre progressivement, sans disparaître.
-    const corridor = Math.max(12, 24 - this.level * 1.5) * u;
+    const corridor = Math.max(9, 22 - this.level * 1.7) * u;
     let guard = 0;
     while (spikes.length < target && guard++ < 160) {
       const cy = rand(arena.y + 34 * u, arena.y + arena.h - 34 * u);
       if (safeY !== undefined && Math.abs(cy - safeY) < corridor) continue;
-      const spacing = Math.max(19, 30 - this.level * 1.35) * u;
+      const spacing = Math.max(15, 28 - this.level * 1.5) * u;
       const ok = spikes.every((sp) => Math.abs(sp.cy - cy) > spacing);
       if (!ok) continue;
-      const lengthBonus = this.level * 1.1;
-      spikes.push({ cy, len: rand(29 + lengthBonus, 39 + lengthBonus) * u, wid: (30 + this.level * 0.45) * u, t: 0 });
+      const lengthBonus = this.level * 1.35;
+      spikes.push({ cy, len: rand(29 + lengthBonus, 39 + lengthBonus) * u, wid: (32 + this.level * 0.55) * u, t: 0 });
     }
     return spikes;
   }
