@@ -278,6 +278,8 @@ export class GameEngine {
 
     this.resize();
     window.addEventListener("resize", this.resize);
+    // Une reprise d'onglet ne doit pas provoquer de rattrapage temporel.
+    document.addEventListener("visibilitychange", this.onVisibilityChange);
     window.addEventListener("keydown", this.onKey);
     canvas.addEventListener("pointerdown", this.onPointer);
     this.reset();
@@ -289,9 +291,15 @@ export class GameEngine {
     this.destroyed = true;
     cancelAnimationFrame(this.raf);
     window.removeEventListener("resize", this.resize);
+    document.removeEventListener("visibilitychange", this.onVisibilityChange);
     window.removeEventListener("keydown", this.onKey);
     this.canvas.removeEventListener("pointerdown", this.onPointer);
   }
+
+  private onVisibilityChange = (): void => {
+    // Ignore le temps passé dans un onglet masqué ou suspendu.
+    this.lastT = performance.now();
+  };
 
   /* ─── Cycle de vie ─────────────────────────────────────────────── */
 
@@ -560,7 +568,10 @@ export class GameEngine {
   private loop = (): void => {
     if (this.destroyed) return;
     const now = performance.now();
-    const dt = clamp((now - this.lastT) / 1000, 0, 1 / 40);
+    // Ne pas plafonner le delta à 25 ms : sur un appareil à 30 FPS ou moins,
+    // cela faisait tourner toute la simulation au ralenti.
+    // Le plafond à 100 ms évite seulement les grands sauts après un blocage.
+    const dt = clamp((now - this.lastT) / 1000, 0, 0.1);
     this.lastT = now;
 
     if (this.state !== "paused") {
