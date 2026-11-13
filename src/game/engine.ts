@@ -452,33 +452,36 @@ export class GameEngine {
   }
 
   private speed(): number {
-    const s = (290 + this.score * 2.1) * (1 + this.level * 0.05);
-    return Math.min(s, 580) * this.u;
+    // Chaque niveau de menace augmente nettement la vitesse, sans plafond trop précoce.
+    const s = (290 + this.score * 2.1) * (1 + this.level * 0.075);
+    return Math.min(s, 760) * this.u;
   }
 
   /** Délai d'armement des pointes — plus long en début de partie. */
   private armTime(): number {
-    return 0.28 + Math.max(0, 24 - this.score) * 0.007;
+    // Les pointes s'arment de plus en plus vite à mesure que la menace grimpe.
+    return Math.max(0.16, 0.34 + Math.max(0, 24 - this.score) * 0.005 - this.level * 0.027);
   }
 
   /* ─── Génération ───────────────────────────────────────────────── */
 
   private genWall(safeY?: number): Spike[] {
     const s = this.score;
-    // Densité plus agressive : les pointes se multiplient plus vite.
-    const target = clamp(2 + Math.floor(s / 6) + (Math.random() < 0.6 ? 1 : 0), 2, 9);
+    // La menace pilote directement la densité : chaque palier ajoute des obstacles.
+    const target = clamp(2 + Math.floor(this.level * 0.9) + Math.floor(s / 28) + (Math.random() < 0.65 ? 1 : 0), 2, 14);
     const spikes: Spike[] = [];
     const { arena, u } = this;
-    // Les pointes peuvent désormais apparaître près du plafond et du sol.
-    // Le petit couloir autour du joueur évite seulement les apparitions injustes.
-    const corridor = 24 * u;
+    // Le couloir de sécurité se resserre progressivement, sans disparaître.
+    const corridor = Math.max(12, 24 - this.level * 1.5) * u;
     let guard = 0;
     while (spikes.length < target && guard++ < 160) {
       const cy = rand(arena.y + 34 * u, arena.y + arena.h - 34 * u);
       if (safeY !== undefined && Math.abs(cy - safeY) < corridor) continue;
-      const ok = spikes.every((sp) => Math.abs(sp.cy - cy) > 30 * u);
+      const spacing = Math.max(19, 30 - this.level * 1.35) * u;
+      const ok = spikes.every((sp) => Math.abs(sp.cy - cy) > spacing);
       if (!ok) continue;
-      spikes.push({ cy, len: rand(29, 39) * u, wid: 30 * u, t: 0 });
+      const lengthBonus = this.level * 1.1;
+      spikes.push({ cy, len: rand(29 + lengthBonus, 39 + lengthBonus) * u, wid: (30 + this.level * 0.45) * u, t: 0 });
     }
     return spikes;
   }
@@ -667,10 +670,10 @@ export class GameEngine {
       }
       if (sh.age > sh.ttl) {
         this.shard = null;
-        this.shardTimer = rand(2.4, 4.4);
+        this.shardTimer = rand(2.4, 4.4) + this.level * 0.16;
       } else if (Math.hypot(p.x - sh.x, p.y - sh.y) < r + 12 * u) {
         this.shard = null;
-        this.shardTimer = rand(2.6, 4.6);
+        this.shardTimer = rand(2.6, 4.6) + this.level * 0.16;
         const shardPoints = p.doubleT > 0 ? 6 : 3;
         this.score += shardPoints;
         this.shardsCollected++;
@@ -685,7 +688,7 @@ export class GameEngine {
     this.powerTimer -= wdt;
     if (this.powerTimer <= 0 && this.powerups.length === 0) {
       this.spawnPowerup();
-      this.powerTimer = rand(14, 21);
+      this.powerTimer = rand(14, 21) + this.level * 0.8;
     }
     for (let i = this.powerups.length - 1; i >= 0; i--) {
       const pw = this.powerups[i];
