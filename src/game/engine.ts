@@ -12,6 +12,7 @@ export interface GameStats {
   level: number;
   rank: string;
   xpEarned: number;
+  creditsEarned: number;
 }
 
 type PowerType = "shield" | "slowmo" | "magnet" | "phase" | "double";
