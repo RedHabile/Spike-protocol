@@ -96,6 +96,16 @@ export async function signOut(): Promise<void> {
   finally { clearSession(); }
 }
 
+export async function linkCloudPlaytime(guestPlayerId: string, accountId: string, playerName: string): Promise<void> {
+  const session = await validSession();
+  const response = await fetch(`${PROJECT_URL}/rest/v1/rpc/link_spike_playtime_to_account`, {
+    method: "POST",
+    headers: headers(session.access_token),
+    body: JSON.stringify({ p_guest_player_id: guestPlayerId, p_account_id: accountId, p_player_name: playerName }),
+  });
+  if (!response.ok) throw await responseError(response);
+}
+
 export async function loadCloudProfile(userId: string): Promise<Profile | null> {
   const session = await validSession();
   const response = await fetch(`${PROJECT_URL}/rest/v1/player_profiles?select=profile&user_id=eq.${encodeURIComponent(userId)}&limit=1`, { headers:headers(session.access_token) });
