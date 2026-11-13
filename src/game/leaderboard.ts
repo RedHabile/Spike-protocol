@@ -9,6 +9,10 @@ const url = (env.VITE_SUPABASE_URL || "https://rrhulffyvltogdbbagir.supabase.co"
 const key = env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyaHVsZmZ5dmx0b2dkYmJhZ2lyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyOTgwOTksImV4cCI6MjEwOTg3NDA5OX0.Pmac0mgdsVlJRXapMIJg6YVCXLiMzJmHCKshtVmLhRA";
 export const leaderboardConfigured = Boolean(url && key);
 
+export function getLocalPlayerId(): string {
+  return playerId();
+}
+
 function playerId(): string {
   try {
     let id = localStorage.getItem(STORAGE_ID);
