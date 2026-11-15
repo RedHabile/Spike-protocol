@@ -172,7 +172,7 @@ const TAU = Math.PI * 2;
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const GLYPHS = "01ΣΩ∆#%&$@!?<>/|=+*×¤§µ";
-const THREAT_STEPS = [0, 6, 14, 25, 38, 54, 72, 94];
+const THREAT_STEPS = [0, 10, 22, 38, 58, 80, 110, 145];
 const BACKGROUND_THEMES = [
   { score: 0, top: "#020711", mid: "#071827", bottom: "#02040b", halo: "rgba(34,211,238,0.12)", grid: "rgba(103,232,249,0.08)", data: "34,211,238", style: "circuit" },
   { score: 10, top: "#160522", mid: "#351044", bottom: "#090313", halo: "rgba(232,60,255,0.20)", grid: "rgba(232,121,249,0.10)", data: "232,121,249", style: "stars" },
@@ -461,36 +461,36 @@ export class GameEngine {
   }
 
   private speed(): number {
-    // Chaque niveau de menace augmente nettement la vitesse, sans plafond trop précoce.
-    const s = (310 + this.score * 2.35) * (1 + this.level * 0.095);
-    return Math.min(s, 760) * this.u;
+    // Progression plus douce : la vitesse augmente moins vite avec le score et la menace.
+    const s = (285 + this.score * 1.55) * (1 + this.level * 0.055);
+    return Math.min(s, 620) * this.u;
   }
 
   /** Délai d'armement des pointes — plus long en début de partie. */
   private armTime(): number {
-    // Les pointes s'arment de plus en plus vite à mesure que la menace grimpe.
-    return Math.max(0.16, 0.31 + Math.max(0, 18 - this.score) * 0.004 - this.level * 0.032);
+    // Les pointes laissent davantage de temps au joueur pour réagir.
+    return Math.max(0.24, 0.42 + Math.max(0, 25 - this.score) * 0.003 - this.level * 0.018);
   }
 
   /* ─── Génération ───────────────────────────────────────────────── */
 
   private genWall(safeY?: number): Spike[] {
     const s = this.score;
-    // La menace pilote directement la densité : chaque palier ajoute des obstacles.
-    const target = clamp(3 + Math.floor(this.level * 1.05) + Math.floor(s / 24) + (Math.random() < 0.75 ? 1 : 0), 3, 16);
+    // Moins de pointes à l'écran pour garder des trajectoires lisibles.
+    const target = clamp(2 + Math.floor(this.level * 0.7) + Math.floor(s / 35) + (Math.random() < 0.55 ? 1 : 0), 2, 10);
     const spikes: Spike[] = [];
     const { arena, u } = this;
-    // Le couloir de sécurité se resserre progressivement, sans disparaître.
-    const corridor = Math.max(9, 22 - this.level * 1.7) * u;
+    // Le couloir sûr reste assez large, même aux niveaux élevés.
+    const corridor = Math.max(22, 36 - this.level * 1.0) * u;
     let guard = 0;
     while (spikes.length < target && guard++ < 160) {
       const cy = rand(arena.y + 34 * u, arena.y + arena.h - 34 * u);
       if (safeY !== undefined && Math.abs(cy - safeY) < corridor) continue;
-      const spacing = Math.max(15, 28 - this.level * 1.5) * u;
+      const spacing = Math.max(22, 34 - this.level * 0.8) * u;
       const ok = spikes.every((sp) => Math.abs(sp.cy - cy) > spacing);
       if (!ok) continue;
-      const lengthBonus = this.level * 1.35;
-      spikes.push({ cy, len: rand(29 + lengthBonus, 39 + lengthBonus) * u, wid: (32 + this.level * 0.55) * u, t: 0 });
+      const lengthBonus = this.level * 0.8;
+      spikes.push({ cy, len: rand(24 + lengthBonus, 32 + lengthBonus) * u, wid: (29 + this.level * 0.35) * u, t: 0 });
     }
     return spikes;
   }
@@ -508,7 +508,7 @@ export class GameEngine {
 
   private spawnPowerup(): void {
     const { arena, u } = this;
-    const types: PowerType[] = ["shield", "shield", "slowmo", "magnet", "phase", "double"];
+    const types: PowerType[] = ["shield", "shield", "shield", "slowmo", "magnet", "phase", "double"];
     const type = types[Math.floor(Math.random() * types.length)];
     this.powerups.push({
       x: rand(arena.x + arena.w * 0.28, arena.x + arena.w * 0.72),
@@ -625,7 +625,7 @@ export class GameEngine {
     // physique joueur
     const spd = this.speed();
     this.maxSpeed = Math.max(this.maxSpeed, spd / u);
-    p.vy = Math.min(p.vy + 2300 * u * wdt, 980 * u);
+    p.vy = Math.min(p.vy + 1950 * u * wdt, 850 * u);
     p.y += p.vy * wdt;
     p.x += p.dir * spd * wdt;
     p.squash += (0 - p.squash) * Math.min(1, dt * 9);
@@ -709,7 +709,7 @@ export class GameEngine {
     this.powerTimer -= wdt;
     if (this.powerTimer <= 0 && this.powerups.length === 0) {
       this.spawnPowerup();
-      this.powerTimer = rand(14, 21) + this.level * 0.8;
+      this.powerTimer = rand(8, 13) + this.level * 0.45;
     }
     for (let i = this.powerups.length - 1; i >= 0; i--) {
       const pw = this.powerups[i];
