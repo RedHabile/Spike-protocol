@@ -156,3 +156,41 @@ export async function claimSpikeName(name: string): Promise<string> {
   if (!response.ok) throw await responseError(response);
   return await response.json() as string;
 }
+
+
+async function getClaimedName(session: AuthSession): Promise<string> {
+  const response = await fetch(`${PROJECT_URL}/rest/v1/rpc/get_my_spike_name`, {
+    method: "POST", headers: headers(session.access_token), body: "{}",
+  });
+  if (!response.ok) throw await responseError(response);
+  const name = await response.json() as string | null;
+  if (!name) throw new Error("Choisis ton pseudo de compte avant de publier un record.");
+  return name;
+}
+
+export async function submitSpikeScore(score: number, accountId: string): Promise<void> {
+  if (!Number.isFinite(score) || score <= 0) return;
+  const session = await validSession();
+  const user = await fetchUser(session);
+  if (!accountId || user.id !== accountId) throw new Error("Le compte connecté ne correspond pas au joueur.");
+  const playerName = await getClaimedName(session);
+  const response = await fetch(`${PROJECT_URL}/rest/v1/rpc/submit_spike_score`, {
+    method: "POST", headers: headers(session.access_token),
+    body: JSON.stringify({ p_player_id: user.id, p_player_name: playerName, p_score: Math.floor(score) }),
+  });
+  if (!response.ok) throw await responseError(response);
+}
+
+export async function submitSpikePlaytime(seconds: number, accountId: string): Promise<void> {
+  const safeSeconds = Math.floor(seconds);
+  if (!Number.isFinite(safeSeconds) || safeSeconds < 1) return;
+  const session = await validSession();
+  const user = await fetchUser(session);
+  if (!accountId || user.id !== accountId) throw new Error("Le compte connecté ne correspond pas au joueur.");
+  const playerName = await getClaimedName(session);
+  const response = await fetch(`${PROJECT_URL}/rest/v1/rpc/submit_spike_playtime`, {
+    method: "POST", headers: headers(session.access_token),
+    body: JSON.stringify({ p_player_id: user.id, p_player_name: playerName, p_seconds: Math.min(safeSeconds, 3600) }),
+  });
+  if (!response.ok) throw await responseError(response);
+}
