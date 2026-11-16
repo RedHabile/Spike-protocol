@@ -3,7 +3,7 @@ import { Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { GameEngine, type GameState, type GameStats, type SkinId, type TrailId } from "./game/engine";
 import { GameOverScreen, PauseScreen, StartScreen } from "./components/Screens";
 import { buyShopSkin, buyShopTrail, claimQuest, createProfile, ensureDaily, loadProfile, recordRun, remaining, saveProfile, type Profile, type QuestId } from "./game/progression";
-import { getPlayerName, recordPlaytime, submitBestScore } from "./game/leaderboard";
+import { recordPlaytime, submitBestScore } from "./game/leaderboard";
 import { restoreAccount, loadCloudProfile, saveCloudProfile, type AuthUser } from "./game/cloud";
 import { AccountWidget } from "./components/Account";
 import { AdminPanel } from "./components/Admin";
