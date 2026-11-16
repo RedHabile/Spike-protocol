@@ -136,3 +136,23 @@ export async function runAdminAction(input:{code:string;email:string;operation:"
   if (!response.ok) throw new Error(data.error || `Erreur admin (${response.status}).`);
   return data;
 }
+
+
+export async function getMySpikeName(): Promise<string | null> {
+  const session = await validSession();
+  const response = await fetch(`${PROJECT_URL}/rest/v1/rpc/get_my_spike_name`, {
+    method:"POST", headers:headers(session.access_token), body:"{}",
+  });
+  if (!response.ok) throw await responseError(response);
+  return await response.json() as string | null;
+}
+
+export async function claimSpikeName(name: string): Promise<string> {
+  const session = await validSession();
+  const response = await fetch(`${PROJECT_URL}/rest/v1/rpc/claim_spike_name`, {
+    method:"POST", headers:headers(session.access_token),
+    body:JSON.stringify({ p_player_name:name }),
+  });
+  if (!response.ok) throw await responseError(response);
+  return await response.json() as string;
+}
