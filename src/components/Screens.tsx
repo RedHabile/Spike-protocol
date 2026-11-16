@@ -1,6 +1,6 @@
 import { Award, Cpu, Diamond, Home, LockKeyhole, Play, RotateCcw, Timer, TriangleAlert, Zap, Trophy, X, RefreshCw, Globe } from "lucide-react";
 import { useState } from "react";
-import { getPlayerName, leaderboardConfigured, loadLeaderboard, loadPlaytimeLeaderboard, savePlayerName, type LeaderboardEntry, type PlaytimeEntry } from "../game/leaderboard";
+import { getPlayerName, isPlayerNameAvailable, leaderboardConfigured, loadLeaderboard, loadPlaytimeLeaderboard, savePlayerName, type LeaderboardEntry, type PlaytimeEntry } from "../game/leaderboard";
 import { SKINS, SHOP_SKIN_IDS, TRAILS, type GameStats, type SkinId, type TrailId } from "../game/engine";
 import { ACHIEVEMENTS, DAILY_QUESTS, getDailyShop, getDailyTrailShop, shopRemaining, questComplete, levelForXp, xpForNextLevel, xpIntoLevel, type Profile, type QuestId } from "../game/progression";
 
@@ -48,15 +48,15 @@ function LeaderboardPanel({onClose}:{onClose:()=>void}) {
   </div>;
 }
 
-export function StartScreen({ best, selectedSkin, profile, countdown, accountConnected, onSelectSkin, onBuySkin, onSelectTrail, onBuyTrail, onClaimQuest, onStart }: {
-  best:number; selectedSkin:SkinId; profile:Profile; countdown:string; accountConnected:boolean;
+export function StartScreen({ best, selectedSkin, profile, countdown, accountConnected, accountId, onSelectSkin, onBuySkin, onSelectTrail, onBuyTrail, onClaimQuest, onStart }: {
+  best:number; selectedSkin:SkinId; profile:Profile; countdown:string; accountConnected:boolean; accountId:string|null;
   onSelectSkin:(id:SkinId)=>void; onBuySkin:(id:SkinId)=>void; onSelectTrail:(id:TrailId)=>void; onBuyTrail:(id:TrailId)=>void; onClaimQuest:(id:QuestId)=>void; onStart:()=>void;
 }) {
   const [showLeaderboard,setShowLeaderboard]=useState(false);
   const [activeTab,setActiveTab]=useState<"skins"|"shop"|"missions"|"achievements">("skins");
   const [playerName,setPlayerName]=useState(()=>{try{return localStorage.getItem("spike-player-name")||"";}catch{return "";}});
   const [nameError,setNameError]=useState("");
-  const startGame=()=>{try{savePlayerName(playerName);setNameError("");onStart();}catch(e){setNameError(e instanceof Error?e.message:"Pseudo invalide.");}};
+  const startGame=async()=>{try{const clean=playerName.trim().replace(/\\s+/g," ");if(accountId&&!await isPlayerNameAvailable(clean,accountId)){setNameError("Ce pseudo est déjà utilisé. Choisis-en un autre.");return;}savePlayerName(clean);setNameError("");onStart();}catch(e){setNameError(e instanceof Error?e.message:"Pseudo invalide.");}};
   const level=levelForXp(profile.xp), xp=xpIntoLevel(profile.xp), needed=xpForNextLevel(level);
   const activeQuests=DAILY_QUESTS.filter(q=>profile.quest.active.includes(q.id));
   const shopClock=Date.now();
