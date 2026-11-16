@@ -17,7 +17,7 @@ function LeaderboardPanel({onClose}:{onClose:()=>void}) {
   const [error,setError]=useState("");
   const [loaded,setLoaded]=useState(false);
   const refresh=async()=>{setLoading(true);setError("");try{const [scores,times]=await Promise.all([loadLeaderboard(),loadPlaytimeLeaderboard()]);setEntries(scores);setPlaytimeEntries(times);setLoaded(true);}catch(e){setError(e instanceof Error?e.message:"Erreur de connexion.");}finally{setLoading(false);}};
-  const save=()=>{try{savePlayerName(name);setSavedName(name.trim().replace(/\s+/g," "));setError("");}catch(e){setError(e instanceof Error?e.message:"Pseudo invalide.");}};
+  const save=()=>{try{savePlayerName(name);setSavedName(getPlayerName());setError("");}catch(e){setError(e instanceof Error?e.message:"Pseudo invalide.");}};
   return <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-3 backdrop-blur-md" role="dialog" aria-modal="true" aria-label="Classement mondial">
     <div className="cyber-panel flex max-h-[88vh] w-full max-w-xl flex-col border-cyan-400/40 p-4 sm:p-6">
       <div className="flex items-center justify-between border-b border-cyan-400/20 pb-3">
@@ -48,8 +48,8 @@ function LeaderboardPanel({onClose}:{onClose:()=>void}) {
   </div>;
 }
 
-export function StartScreen({ best, selectedSkin, profile, countdown, onSelectSkin, onBuySkin, onSelectTrail, onBuyTrail, onClaimQuest, onStart }: {
-  best:number; selectedSkin:SkinId; profile:Profile; countdown:string;
+export function StartScreen({ best, selectedSkin, profile, countdown, accountConnected, onSelectSkin, onBuySkin, onSelectTrail, onBuyTrail, onClaimQuest, onStart }: {
+  best:number; selectedSkin:SkinId; profile:Profile; countdown:string; accountConnected:boolean;
   onSelectSkin:(id:SkinId)=>void; onBuySkin:(id:SkinId)=>void; onSelectTrail:(id:TrailId)=>void; onBuyTrail:(id:TrailId)=>void; onClaimQuest:(id:QuestId)=>void; onStart:()=>void;
 }) {
   const [showLeaderboard,setShowLeaderboard]=useState(false);
@@ -70,6 +70,12 @@ export function StartScreen({ best, selectedSkin, profile, countdown, onSelectSk
       <h1 className="glitch font-display text-[13vw] leading-[0.9] font-bold tracking-tight text-slate-100 uppercase sm:text-7xl md:text-8xl" data-text="SPIKE">SPIKE</h1>
       <h2 className="glitch neon-text-cyan font-display text-[10vw] leading-[1.05] font-bold tracking-[0.08em] text-cyan-300 uppercase sm:text-6xl" data-text="PROTOCOL">PROTOCOL</h2>
       <p className="mt-3 max-w-md font-mono text-[10px] leading-relaxed tracking-wide text-slate-400 sm:text-xs">Survivez aux pointes. Collectez les éclats. Faites évoluer votre opérateur.</p>
+      <div className={`mt-3 w-full max-w-2xl border p-3 text-left font-mono text-[9px] leading-relaxed ${accountConnected?"border-emerald-400/30 bg-emerald-400/5 text-emerald-200":"border-cyan-400/30 bg-cyan-400/5 text-cyan-100"}`}>
+        <strong className="block tracking-wider">{accountConnected?"COMPTE CONNECTÉ":"CONSEIL : CONNECTE-TOI AVEC GMAIL"}</strong>
+        {accountConnected
+          ?"Tes prochains records et ton temps de jeu sont associés à ton compte. Tu pourras retrouver ta progression en te reconnectant."
+          :"Connecte-toi avec ton adresse Gmail dans le bouton COMPTE pour associer tes records à ton identité et les retrouver sur un autre appareil. Sans connexion, ils restent liés à cet appareil."}
+      </div>
       <div className="mt-5 grid w-full max-w-2xl grid-cols-3 gap-2">
         <div className="cyber-panel p-3"><span className="block font-mono text-[8px] text-slate-500">NIVEAU</span><strong className="font-display text-3xl text-cyan-300">{level}</strong></div>
         <div className="cyber-panel p-3"><span className="block font-mono text-[8px] text-slate-500">EXPÉRIENCE</span><strong className="font-display text-3xl text-slate-100">{profile.xp} XP</strong></div>
