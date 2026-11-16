@@ -13,7 +13,7 @@ security definer
 set search_path = ''
 as $$
 declare
-  clean_name text := btrim(regexp_replace(p_player_name, '\\s+', ' ', 'g'));
+  clean_name text := btrim(regexp_replace(p_player_name, '\s+', ' ', 'g'));
   name_taken boolean;
 begin
   if auth.uid() is null or auth.uid() <> p_player_id then
@@ -58,7 +58,7 @@ security definer
 set search_path = ''
 as $$
 declare
-  clean_name text := btrim(regexp_replace(p_player_name, '\\s+', ' ', 'g'));
+  clean_name text := btrim(regexp_replace(p_player_name, '\s+', ' ', 'g'));
   name_taken boolean;
 begin
   if auth.uid() is null or auth.uid() <> p_player_id then
