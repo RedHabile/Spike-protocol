@@ -67,6 +67,17 @@ export function StartScreen({ best, selectedSkin, profile, countdown, accountCon
   const shopMs=shopRemaining(shopClock);
   const shopTimer=[Math.floor(shopMs/3600000),Math.floor(shopMs%3600000/60000),Math.floor(shopMs%60000/1000)].map(v=>String(v).padStart(2,"0")).join(":");
   return <div className="overlay-in absolute inset-0 z-30 overflow-y-auto bg-[#05070d]/90 px-4 py-8 backdrop-blur-[6px] sm:px-6">
+    {accountConnected&&!accountName&&<div className="fixed inset-0 z-[75] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-label="Choisir ton pseudo">
+      <div className="cyber-panel w-full max-w-md border-cyan-400/40 p-5 sm:p-6">
+        <div className="font-mono text-[9px] tracking-[0.3em] text-cyan-300">IDENTITÉ EN LIGNE // ACTIVATION</div>
+        <h2 className="mt-2 font-display text-2xl font-bold tracking-wider text-slate-100">CHOISIS TON PSEUDO</h2>
+        <p className="mt-3 font-mono text-[10px] leading-relaxed text-slate-400">Ce nom sera lié à ton compte e-mail et affiché dans les classements mondiaux. Il sera conservé lors de tes prochaines connexions.</p>
+        <input autoFocus value={newPlayerName} onChange={e=>{setNewPlayerName(e.target.value.slice(0,18));setNameError("");}} onKeyDown={e=>{if(e.key==="Enter")void saveAccountName();}} maxLength={18} minLength={2} placeholder="Ton pseudo (2 à 18 caractères)" className="mt-4 w-full border border-cyan-400/30 bg-slate-950/90 px-4 py-3 font-mono text-sm tracking-wider text-slate-100 outline-none placeholder:text-slate-600 focus:border-cyan-300"/>
+        {nameError&&<p role="alert" className="mt-2 font-mono text-[9px] text-rose-300">{nameError}</p>}
+        <button onClick={()=>void saveAccountName()} disabled={savingName||newPlayerName.trim().length<2} className="cyber-btn cyber-btn-primary mt-4 w-full px-5 py-3 font-mono text-[10px] font-bold tracking-[0.2em] disabled:opacity-50">{savingName?"VÉRIFICATION...":"VALIDER MON PSEUDO"}</button>
+        <p className="mt-3 font-mono text-[8px] leading-relaxed text-slate-600">Si ce pseudo est déjà pris, un message te demandera d'en choisir un autre.</p>
+      </div>
+    </div>}
     <div className="mx-auto flex w-full max-w-4xl flex-col items-center text-center">
       <div className="mb-3 flex items-center gap-2 font-mono text-[10px] tracking-[0.5em] text-cyan-300/70"><Cpu className="h-3.5 w-3.5"/><span>SYS.BRÈCHE // v3.0</span><span className="blink-caret">▮</span></div>
       <h1 className="glitch font-display text-[13vw] leading-[0.9] font-bold tracking-tight text-slate-100 uppercase sm:text-7xl md:text-8xl" data-text="SPIKE">SPIKE</h1>
