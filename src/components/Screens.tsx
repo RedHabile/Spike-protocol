@@ -1,6 +1,6 @@
 import { Award, Cpu, Diamond, Home, LockKeyhole, Play, RotateCcw, Timer, TriangleAlert, Zap, Trophy, X, RefreshCw, Globe } from "lucide-react";
 import { useState } from "react";
-import { getPlayerName, leaderboardConfigured, loadLeaderboard, loadPlaytimeLeaderboard, savePlayerName, type LeaderboardEntry, type PlaytimeEntry } from "../game/leaderboard";
+import { leaderboardConfigured, loadLeaderboard, loadPlaytimeLeaderboard, type LeaderboardEntry, type PlaytimeEntry } from "../game/leaderboard";
 import { SKINS, SHOP_SKIN_IDS, TRAILS, type GameStats, type SkinId, type TrailId } from "../game/engine";
 import { ACHIEVEMENTS, DAILY_QUESTS, getDailyShop, getDailyTrailShop, shopRemaining, questComplete, levelForXp, xpForNextLevel, xpIntoLevel, type Profile, type QuestId } from "../game/progression";
 
@@ -11,24 +11,16 @@ function LeaderboardPanel({onClose}:{onClose:()=>void}) {
   const [entries,setEntries]=useState<LeaderboardEntry[]>([]);
   const [playtimeEntries,setPlaytimeEntries]=useState<PlaytimeEntry[]>([]);
   const [mode,setMode]=useState<"score"|"time">("score");
-  const [name,setName]=useState(getPlayerName());
-  const [savedName,setSavedName]=useState(getPlayerName());
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState("");
   const [loaded,setLoaded]=useState(false);
   const refresh=async()=>{setLoading(true);setError("");try{const [scores,times]=await Promise.all([loadLeaderboard(),loadPlaytimeLeaderboard()]);setEntries(scores);setPlaytimeEntries(times);setLoaded(true);}catch(e){setError(e instanceof Error?e.message:"Erreur de connexion.");}finally{setLoading(false);}};
-  const save=()=>{try{savePlayerName(name);setSavedName(getPlayerName());setError("");}catch(e){setError(e instanceof Error?e.message:"Pseudo invalide.");}};
   return <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-3 backdrop-blur-md" role="dialog" aria-modal="true" aria-label="Classement mondial">
     <div className="cyber-panel flex max-h-[88vh] w-full max-w-xl flex-col border-cyan-400/40 p-4 sm:p-6">
       <div className="flex items-center justify-between border-b border-cyan-400/20 pb-3">
         <div><div className="flex items-center gap-2 font-mono text-[9px] tracking-[0.3em] text-cyan-300"><Globe className="h-3.5 w-3.5"/>RÉSEAU GLOBAL</div><h2 className="mt-1 font-display text-2xl font-bold tracking-wider text-slate-100">CLASSEMENT MONDIAL</h2></div>
         <button onClick={onClose} aria-label="Fermer" className="cyber-btn cyber-btn-ghost flex h-9 w-9 items-center justify-center"><X className="h-4 w-4"/></button>
       </div>
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-        <input value={name} onChange={e=>setName(e.target.value)} maxLength={18} placeholder="Ton pseudo" className="min-w-0 flex-1 border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-xs text-slate-100 outline-none focus:border-cyan-300"/>
-        <button onClick={save} className="cyber-btn cyber-btn-primary px-4 py-2 font-mono text-[10px] tracking-wider">ENREGISTRER LE PSEUDO</button>
-      </div>
-      <p className="mt-1 font-mono text-[8px] text-slate-500">PSEUDO ACTUEL : {savedName}</p>
       {!leaderboardConfigured&&<div className="mt-4 border border-amber-400/30 bg-amber-400/5 p-3 font-mono text-[10px] leading-relaxed text-amber-200">
         <strong className="block tracking-wider">CONNEXION AU SERVEUR À CONFIGURER</strong>
         Le tableau est prêt, mais il faut créer le projet Supabase et ajouter ses deux clés dans les variables GitHub Actions pour partager les scores entre joueurs.
