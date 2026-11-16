@@ -31,15 +31,12 @@ function playerId(): string {
   }
 }
 
-export function getPlayerName(identityId?: string): string {
-  // Le suffixe provient de l'identifiant unique du joueur (compte ou appareil).
-  // Il évite que deux joueurs apparaissent sous le même nom dans les classements.
-  const id = identityId || playerId();
-  const suffix = id.replace(/-/g, "").slice(-6).toUpperCase();
-  let base = "";
-  try { base = localStorage.getItem(STORAGE_NAME)?.trim() || ""; } catch { /* stockage local indisponible */ }
-  if (!base) base = "OPÉRATEUR";
-  return `${base.slice(0, 11)}-${suffix}`.slice(0, 18);
+export function getPlayerName(): string {
+  try {
+    return localStorage.getItem(STORAGE_NAME)?.trim() || "OPÉRATEUR";
+  } catch {
+    return "OPÉRATEUR";
+  }
 }
 
 export function savePlayerName(name: string): void {
@@ -61,14 +58,15 @@ export async function loadLeaderboard(): Promise<LeaderboardEntry[]> {
   return response.json() as Promise<LeaderboardEntry[]>;
 }
 
-export async function submitBestScore(score: number, accountId?: string): Promise<void> {
-  if (!leaderboardConfigured || !Number.isFinite(score) || score <= 0) return;
+export async function submitBestScore(score: number, accountId: string): Promise<void> {
+  // Aucun record public n'est envoyé sans compte authentifié.
+  if (!accountId || !leaderboardConfigured || !Number.isFinite(score) || score <= 0) return;
   const response = await fetch(`${url}/rest/v1/rpc/submit_spike_score`, {
     method: "POST",
     headers: headers(),
     body: JSON.stringify({
-      p_player_id: accountId || playerId(),
-      p_player_name: getPlayerName(accountId),
+      p_player_id: accountId,
+      p_player_name: getPlayerName(),
       p_score: Math.floor(score),
     }),
   });
@@ -87,15 +85,15 @@ export async function loadPlaytimeLeaderboard(): Promise<PlaytimeEntry[]> {
   return response.json() as Promise<PlaytimeEntry[]>;
 }
 
-export async function recordPlaytime(seconds: number, accountId?: string): Promise<void> {
+export async function recordPlaytime(seconds: number, accountId: string): Promise<void> {
   const safeSeconds = Math.floor(seconds);
-  if (!leaderboardConfigured || !Number.isFinite(safeSeconds) || safeSeconds < 1) return;
+  if (!accountId || !leaderboardConfigured || !Number.isFinite(safeSeconds) || safeSeconds < 1) return;
   const response = await fetch(`${url}/rest/v1/rpc/submit_spike_playtime`, {
     method: "POST",
     headers: headers(),
     body: JSON.stringify({
-      p_player_id: accountId || playerId(),
-      p_player_name: getPlayerName(accountId),
+      p_player_id: accountId,
+      p_player_name: getPlayerName(),
       p_seconds: Math.min(safeSeconds, 3600),
     }),
   });
