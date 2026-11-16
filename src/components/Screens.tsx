@@ -73,8 +73,8 @@ export function StartScreen({ best, selectedSkin, profile, countdown, accountCon
       <div className={`mt-3 w-full max-w-2xl border p-3 text-left font-mono text-[9px] leading-relaxed ${accountConnected?"border-emerald-400/30 bg-emerald-400/5 text-emerald-200":"border-cyan-400/30 bg-cyan-400/5 text-cyan-100"}`}>
         <strong className="block tracking-wider">{accountConnected?"COMPTE CONNECTÉ":"CONSEIL : CONNECTE-TOI AVEC GMAIL"}</strong>
         {accountConnected
-          ?"Tes prochains records et ton temps de jeu sont associés à ton compte. Tu pourras retrouver ta progression en te reconnectant."
-          :"Connecte-toi avec ton adresse Gmail dans le bouton COMPTE pour associer tes records à ton identité et les retrouver sur un autre appareil. Sans connexion, ils restent liés à cet appareil."}
+          ?"Tes prochains records et ton temps de jeu seront associés à ton compte."
+          :"Connecte-toi avec une adresse e-mail dans le bouton COMPTE pour apparaître dans les records mondiaux. Tu peux jouer sans compte, mais tes scores et ton temps de jeu ne seront pas enregistrés dans les classements."}
       </div>
       <div className="mt-5 grid w-full max-w-2xl grid-cols-3 gap-2">
         <div className="cyber-panel p-3"><span className="block font-mono text-[8px] text-slate-500">NIVEAU</span><strong className="font-display text-3xl text-cyan-300">{level}</strong></div>
