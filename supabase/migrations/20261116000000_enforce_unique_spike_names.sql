@@ -16,6 +16,9 @@ declare
   clean_name text := btrim(regexp_replace(p_player_name, '\\s+', ' ', 'g'));
   name_taken boolean;
 begin
+  if auth.uid() is null or auth.uid() <> p_player_id then
+    raise exception 'Connexion requise pour enregistrer un record.';
+  end if;
   if p_score is null or p_score < 0 or p_score > 1000000 then
     raise exception 'Score invalide';
   end if;
@@ -58,6 +61,9 @@ declare
   clean_name text := btrim(regexp_replace(p_player_name, '\\s+', ' ', 'g'));
   name_taken boolean;
 begin
+  if auth.uid() is null or auth.uid() <> p_player_id then
+    raise exception 'Connexion requise pour enregistrer le temps de jeu.';
+  end if;
   if p_seconds is null or p_seconds < 1 or p_seconds > 3600 then
     raise exception 'Durée invalide';
   end if;
@@ -86,7 +92,7 @@ begin
 end;
 $$;
 
-revoke all on function public.submit_spike_score(uuid, text, integer) from public;
-revoke all on function public.submit_spike_playtime(uuid, text, integer) from public;
-grant execute on function public.submit_spike_score(uuid, text, integer) to anon, authenticated;
-grant execute on function public.submit_spike_playtime(uuid, text, integer) to anon, authenticated;
+revoke all on function public.submit_spike_score(uuid, text, integer) from public, anon;
+revoke all on function public.submit_spike_playtime(uuid, text, integer) from public, anon;
+grant execute on function public.submit_spike_score(uuid, text, integer) to authenticated;
+grant execute on function public.submit_spike_playtime(uuid, text, integer) to authenticated;
