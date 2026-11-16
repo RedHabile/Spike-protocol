@@ -45,6 +45,24 @@ export function savePlayerName(name: string): void {
   try { localStorage.setItem(STORAGE_NAME, clean); } catch { /* stockage local indisponible */ }
 }
 
+export async function isPlayerNameAvailable(name: string, accountId: string): Promise<boolean> {
+  const clean = name.trim().replace(/\\s+/g, " ");
+  if (!accountId || clean.length < 2) return false;
+  const params = new URLSearchParams({
+    select: "player_id",
+    player_name: `ilike.${clean}`,
+    player_id: `neq.${accountId}`,
+    limit: "1",
+  });
+  const [scores, times] = await Promise.all([
+    fetch(`${url}/rest/v1/leaderboard?${params}`, { headers: headers() }),
+    fetch(`${url}/rest/v1/playtime_leaderboard?${params}`, { headers: headers() }),
+  ]);
+  if (!scores.ok || !times.ok) throw new Error("Vérification du pseudo impossible.");
+  const [scoreRows, timeRows] = await Promise.all([scores.json(), times.json()]) as [Array<{player_id:string}>, Array<{player_id:string}>];
+  return scoreRows.length === 0 && timeRows.length === 0;
+}
+
 function headers() {
   if (!url || !key) throw new Error("Classement non configuré.");
   return { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
