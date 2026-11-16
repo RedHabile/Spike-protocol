@@ -3,8 +3,8 @@ import { Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { GameEngine, type GameState, type GameStats, type SkinId, type TrailId } from "./game/engine";
 import { GameOverScreen, PauseScreen, StartScreen } from "./components/Screens";
 import { buyShopSkin, buyShopTrail, claimQuest, createProfile, ensureDaily, loadProfile, recordRun, remaining, saveProfile, type Profile, type QuestId } from "./game/progression";
-import { getLocalPlayerId, getPlayerName, recordPlaytime, submitBestScore } from "./game/leaderboard";
-import { restoreAccount, loadCloudProfile, linkCloudPlaytime, saveCloudProfile, type AuthUser } from "./game/cloud";
+import { getPlayerName, recordPlaytime, submitBestScore } from "./game/leaderboard";
+import { restoreAccount, loadCloudProfile, saveCloudProfile, type AuthUser } from "./game/cloud";
 import { AccountWidget } from "./components/Account";
 import { AdminPanel } from "./components/Admin";
 
@@ -17,7 +17,7 @@ export default function App(){
  const profileRef=useRef(profile),accountRef=useRef<AuthUser|null>(null),syncTimerRef=useRef<number|undefined>(undefined),playtimeStartedAt=useRef<number|null>(null);
  const updateProfile=(next:Profile)=>{profileRef.current=next;setProfile(next);saveProfile(next);const userId=accountRef.current?.id;if(userId){window.clearTimeout(syncTimerRef.current);syncTimerRef.current=window.setTimeout(()=>{void saveCloudProfile(userId,next).catch(error=>console.warn("Synchronisation Spike Protocol :",error));},500);}};
  const selectedSkin=profile.equippedSkin;
- const handleAuthenticated=useCallback(async(user:AuthUser)=>{accountRef.current=user;setAccount(user);window.clearTimeout(syncTimerRef.current);void linkCloudPlaytime(getLocalPlayerId(),user.id,getPlayerName(user.id)).catch(error=>console.warn("Synchronisation du temps de jeu Spike Protocol :",error));const remote=await loadCloudProfile(user.id);if(remote){try{localStorage.setItem("spike-profile-owner",user.id);}catch{}profileRef.current=remote;setProfile(remote);saveProfile(remote);engineRef.current?.setSkin(remote.equippedSkin);engineRef.current?.setTrail(remote.equippedTrail);}else{let owner:string|null=null;try{owner=localStorage.getItem("spike-profile-owner");}catch{}const startingProfile=owner&&owner!==user.id?createProfile():profileRef.current;profileRef.current=startingProfile;setProfile(startingProfile);saveProfile(startingProfile);try{localStorage.setItem("spike-profile-owner",user.id);}catch{}await saveCloudProfile(user.id,startingProfile);}},[]);
+ const handleAuthenticated=useCallback(async(user:AuthUser)=>{accountRef.current=user;setAccount(user);window.clearTimeout(syncTimerRef.current);const remote=await loadCloudProfile(user.id);if(remote){try{localStorage.setItem("spike-profile-owner",user.id);}catch{}profileRef.current=remote;setProfile(remote);saveProfile(remote);engineRef.current?.setSkin(remote.equippedSkin);engineRef.current?.setTrail(remote.equippedTrail);}else{let owner:string|null=null;try{owner=localStorage.getItem("spike-profile-owner");}catch{}const startingProfile=owner&&owner!==user.id?createProfile():profileRef.current;profileRef.current=startingProfile;setProfile(startingProfile);saveProfile(startingProfile);try{localStorage.setItem("spike-profile-owner",user.id);}catch{}await saveCloudProfile(user.id,startingProfile);}},[]);
  const handleSignedOut=useCallback(()=>{window.clearTimeout(syncTimerRef.current);accountRef.current=null;setAccount(null);},[]);
  useEffect(()=>{let active=true;void restoreAccount().then(user=>{if(active&&user)return handleAuthenticated(user);}).catch(error=>console.warn("Restauration du compte Spike Protocol :",error));return()=>{active=false;};},[handleAuthenticated]);
  useEffect(()=>{const timer=setInterval(()=>{setClock(Date.now());const fresh=ensureDaily(profileRef.current);if(fresh!==profileRef.current)updateProfile(fresh);},1000);return()=>clearInterval(timer);},[]);
@@ -25,12 +25,12 @@ export default function App(){
   const canvas=canvasRef.current;if(!canvas)return;
   const engine=new GameEngine(canvas,(state,s)=>{
    setUiState(state);
-   if(state==="gameover"&&s){const result=recordRun(profileRef.current,s);updateProfile(result.profile);void submitBestScore(s.score,accountRef.current?.id).catch(error=>console.warn("Classement Spike Protocol :",error));setStats({...s,xpEarned:result.xpEarned,creditsEarned:result.creditsEarned});}
+   if(state==="gameover"&&s){const result=recordRun(profileRef.current,s);updateProfile(result.profile);if(accountRef.current?.id)void submitBestScore(s.score,accountRef.current.id).catch(error=>console.warn("Classement Spike Protocol :",error));setStats({...s,xpEarned:result.xpEarned,creditsEarned:result.creditsEarned});}
   });
   engineRef.current=engine;engine.setSkin(selectedSkin);engine.setTrail(profile.equippedTrail);setMuted(engine.isMuted);
   return()=>{engine.destroy();engineRef.current=null;};
  },[]);
- const flushPlaytime=useCallback(()=>{const started=playtimeStartedAt.current;if(started===null)return;const seconds=Math.floor((Date.now()-started)/1000);playtimeStartedAt.current=document.visibilityState==="visible"?Date.now():null;if(seconds>0)void recordPlaytime(seconds,accountRef.current?.id).catch(error=>console.warn("Temps de jeu Spike Protocol :",error));},[]);
+ const flushPlaytime=useCallback(()=>{const started=playtimeStartedAt.current;if(started===null)return;const seconds=Math.floor((Date.now()-started)/1000);playtimeStartedAt.current=document.visibilityState==="visible"?Date.now():null;if(seconds>0&&accountRef.current?.id)void recordPlaytime(seconds,accountRef.current.id).catch(error=>console.warn("Temps de jeu Spike Protocol :",error));},[]);
  useEffect(()=>{playtimeStartedAt.current=document.visibilityState==="visible"?Date.now():null;const interval=window.setInterval(()=>{if(document.visibilityState==="visible")flushPlaytime();},30000);const onVisibilityChange=()=>{if(document.visibilityState==="hidden"){flushPlaytime();playtimeStartedAt.current=null;}else if(playtimeStartedAt.current===null){playtimeStartedAt.current=Date.now();}};const onPageHide=()=>{flushPlaytime();playtimeStartedAt.current=null;};window.addEventListener("visibilitychange",onVisibilityChange);window.addEventListener("pagehide",onPageHide);return()=>{window.clearInterval(interval);window.removeEventListener("visibilitychange",onVisibilityChange);window.removeEventListener("pagehide",onPageHide);flushPlaytime();playtimeStartedAt.current=null;};},[flushPlaytime]);
  const handleStart=useCallback(()=>engineRef.current?.start(),[]);
  const handleSelectSkin=useCallback((id:SkinId)=>{if(!profileRef.current.unlockedSkins.includes(id))return;const next={...profileRef.current,equippedSkin:id};updateProfile(next);engineRef.current?.setSkin(id);},[]);
