@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LogIn, LogOut, UserRound, X, Cloud, ShieldCheck } from "lucide-react";
 import { signIn, signUp, signOut, resendConfirmationEmail, type AuthUser } from "../game/cloud";
 
@@ -7,7 +7,7 @@ export function AccountWidget({ user, onAuthenticated, onSignedOut }: {
   onAuthenticated:(user:AuthUser)=>Promise<void>;
   onSignedOut:()=>void;
 }) {
-  const [open,setOpen]=useState(false),[mode,setMode]=useState<"login"|"register">("login");
+  const [open,setOpen]=useState(false),[mode,setMode]=useState<"login"|"register">("login");\n  useEffect(()=>{if(autoPrompt&&!user)setOpen(true);},[autoPrompt,user]);
   const [email,setEmail]=useState(""),[password,setPassword]=useState("");
   const [busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState("");
   const submit=async()=>{
