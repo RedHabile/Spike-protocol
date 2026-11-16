@@ -13,8 +13,8 @@ export function AccountWidget({ user, onAuthenticated, onSignedOut }: {
   const submit=async()=>{
     setBusy(true);setError("");setMessage("");
     try {
-      if(mode==="login") { const account=await signIn(email,password); await onAuthenticated(account); setPassword(""); setMessage("Connexion réussie. Progression synchronisée."); }
-      else { const result=await signUp(email,password); if(result.needsEmailConfirmation) {  setMessage("Compte créé ! Vérifie ta boîte mail. Tu peux renvoyer le mail de confirmation ci-dessous."); } else { await onAuthenticated(result.user); setPassword(""); setMessage("Compte créé et progression synchronisée."); } }
+      if(mode==="login") { const account=await signIn(email,password); await onAuthenticated(account); setPassword(""); setOpen(false); setMessage(""); }
+      else { const result=await signUp(email,password); if(result.needsEmailConfirmation) {  setMessage("Compte créé ! Vérifie ta boîte mail. Tu peux renvoyer le mail de confirmation ci-dessous."); } else { await onAuthenticated(result.user); setPassword(""); setOpen(false); setMessage(""); } }
     } catch(e) { setError(e instanceof Error?e.message:"Une erreur est survenue."); }
     finally { setBusy(false); }
   };
