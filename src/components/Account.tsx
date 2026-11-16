@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { LogIn, LogOut, UserRound, X, Cloud, ShieldCheck } from "lucide-react";
 import { signIn, signUp, signOut, resendConfirmationEmail, type AuthUser } from "../game/cloud";
 
-export function AccountWidget({ user, autoPrompt = false, onAuthenticated, onSignedOut }: {
+export function AccountWidget({ user, playerName, autoPrompt = false, onAuthenticated, onSignedOut, onChangeName }: {
   user: AuthUser | null;
+  playerName: string | null;
   autoPrompt?: boolean;
   onAuthenticated: (user: AuthUser) => Promise<void>;
   onSignedOut: () => void;
+  onChangeName: (name: string) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -15,6 +17,25 @@ export function AccountWidget({ user, autoPrompt = false, onAuthenticated, onSig
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [nameOpen, setNameOpen] = useState(false);
+  const [newName, setNewName] = useState(playerName || "");
+  const [nameBusy, setNameBusy] = useState(false);
+  const [nameError, setNameError] = useState("");
+
+  useEffect(() => { setNewName(playerName || ""); }, [playerName]);
+
+  const saveName = async () => {
+    setNameBusy(true);
+    setNameError("");
+    try {
+      await onChangeName(newName.trim());
+      setNameOpen(false);
+    } catch (e) {
+      setNameError(e instanceof Error ? e.message : "Impossible de modifier le pseudo.");
+    } finally {
+      setNameBusy(false);
+    }
+  };
 
   useEffect(() => {
     if (autoPrompt && !user) setOpen(true);
@@ -82,10 +103,23 @@ export function AccountWidget({ user, autoPrompt = false, onAuthenticated, onSig
   };
 
   return <>
-    <button onClick={() => { setOpen(true); setError(""); setMessage(""); }} className="cyber-btn cyber-btn-ghost fixed right-3 top-16 z-50 sm:right-5 flex items-center gap-2 px-3 py-2 font-mono text-[9px] tracking-wider sm:left-5 sm:top-5">
+    <div className="fixed right-3 top-16 z-50 flex items-center gap-2 sm:left-5 sm:right-auto sm:top-5">
+    {user && playerName && <button onClick={() => { setNewName(playerName); setNameError(""); setNameOpen(true); }} className="cyber-btn cyber-btn-ghost flex items-center gap-2 px-3 py-2 font-mono text-[9px] tracking-wider">CHANGER DE PSEUDO</button>}
+    <button onClick={() => { setOpen(true); setError(""); setMessage(""); }} className="cyber-btn cyber-btn-ghost flex items-center gap-2 px-3 py-2 font-mono text-[9px] tracking-wider">
       {user ? <Cloud className="h-3.5 w-3.5 text-emerald-300" /> : <UserRound className="h-3.5 w-3.5" />}
       {user ? "COMPTE CONNECTÉ" : "COMPTE"}
     </button>
+    </div>
+
+    {nameOpen && user && <div className="fixed inset-0 z-[85] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-label="Changer de pseudo">
+      <div className="cyber-panel w-full max-w-md border-cyan-400/40 p-5 sm:p-6">
+        <div className="mb-4 flex items-center justify-between border-b border-cyan-400/20 pb-3"><div><div className="font-mono text-[9px] tracking-[0.3em] text-cyan-300">IDENTITÉ EN LIGNE</div><h2 className="mt-1 font-display text-2xl font-bold tracking-wider text-slate-100">CHANGER DE PSEUDO</h2></div><button onClick={() => setNameOpen(false)} aria-label="Fermer" className="cyber-btn cyber-btn-ghost flex h-9 w-9 items-center justify-center"><X className="h-4 w-4" /></button></div>
+        <p className="mb-3 font-mono text-[9px] leading-relaxed text-slate-400">Ton nouveau pseudo remplacera l’ancien dans les prochains classements. Il doit être unique.</p>
+        <input autoFocus value={newName} onChange={e => { setNewName(e.target.value.slice(0,18)); setNameError(""); }} onKeyDown={e => { if (e.key === "Enter") void saveName(); }} maxLength={18} minLength={2} placeholder="Ton pseudo (2 à 18 caractères)" className="w-full border border-cyan-400/30 bg-slate-950 px-3 py-3 font-mono text-sm text-slate-100 outline-none focus:border-cyan-300" />
+        {nameError && <p role="alert" className="mt-2 border border-rose-400/30 p-2 font-mono text-[9px] text-rose-300">{nameError}</p>}
+        <button onClick={() => void saveName()} disabled={nameBusy || newName.trim().length < 2 || newName.trim() === playerName} className="cyber-btn cyber-btn-primary mt-4 w-full px-4 py-3 font-mono text-[10px] disabled:opacity-50">{nameBusy ? "VÉRIFICATION..." : "VALIDER LE NOUVEAU PSEUDO"}</button>
+      </div>
+    </div>}
 
     {open && <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-label="Compte Spike Protocol">
       <div className="cyber-panel w-full max-w-md border-cyan-400/40 p-5 sm:p-6">
