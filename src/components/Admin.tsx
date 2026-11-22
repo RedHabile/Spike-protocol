@@ -14,7 +14,7 @@ export function AdminPanel({user}:{user:{id:string;email?:string}|null}) {
   if(kind==="update_publish"&&!previewing){
    const textToCheck=updateTitle+"\n"+updateContent;
    if(updateTitle.trim().length<3||updateTitle.trim().length>100||updateContent.trim().length<10||updateContent.trim().length>4000){setError("Le titre doit faire 3 à 100 caractères et le texte 10 à 4 000 caractères.");return;}
-   if(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i.test(textToCheck)||/(?:\\+?\\d[\\d .()\\-]{7,}\\d)/.test(textToCheck)||/https?:\\/\\/|www\\.|@\\w+/i.test(textToCheck)){setError("Le texte semble contenir une adresse e-mail, un numéro, un lien ou un identifiant personnel. Retire ces informations.");return;}
+   if(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(textToCheck)||/(?:\+?\d[\d .()\-]{7,}\d)/.test(textToCheck)||/https?:\/\/|www\.|@\w+/i.test(textToCheck)){setError("Le texte semble contenir une adresse e-mail, un numéro, un lien ou un identifiant personnel. Retire ces informations.");return;}
    setPreviewing(true);setApproved(false);setError("");return;
   }
   if(kind==="update_publish"&&!approved){setError("Valide le texte après l'avoir relu avant publication.");return;}
