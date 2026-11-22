@@ -14,7 +14,7 @@ create index if not exists spike_username_warnings_user_pending_idx
   where status = 'pending';
 
 alter table public.spike_username_warnings enable row level security;
-revoke all on public.spike_username_warnings from anon, authenticated;
+revoke all on table public.spike_username_warnings from public, anon, authenticated;
 grant select on public.spike_username_warnings to authenticated;
 
 drop policy if exists "Players can read their own username warnings" on public.spike_username_warnings;
