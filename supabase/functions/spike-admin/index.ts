@@ -30,9 +30,38 @@ Deno.serve(async (req: Request) => {
   const caller = await verify.json();
   if (caller.email?.trim().toLowerCase() !== "ethan.ventre2411@gmail.com") return respond({ error: "Ce compte n’est pas autorisé à utiliser le mode admin." }, 403);
 
-  let body: { code?: string; email?: string; operation?: string; amount?: number; skin?: string; trail?: string; reason?: string };
+  let body: { code?: string; email?: string; operation?: string; amount?: number; skin?: string; trail?: string; reason?: string; title?: string; content?: string };
   try { body = await req.json(); } catch { return respond({ error: "Requête invalide." }, 400); }
   if (!body.code || body.code !== adminCode) return respond({ error: "Code admin incorrect." }, 403);
+
+  if (body.operation === "update_publish") {
+    const title = body.title?.trim() || "";
+    const content = body.content?.trim() || "";
+    const publicText = title + "\n" + content;
+    if (title.length < 3 || title.length > 100 || content.length < 10 || content.length > 4000) {
+      return respond({ error: "Titre ou texte de mise à jour invalide." }, 400);
+    }
+    const containsPersonalData =
+      /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(publicText) ||
+      /(?:\+?\d[\d .()\-]{7,}\d)/.test(publicText) ||
+      /https?:\/\/|www\.|@\w+/i.test(publicText);
+    if (containsPersonalData) {
+      return respond({ error: "Le texte contient une adresse e-mail, un numéro, un lien ou un identifiant. Retire ces informations personnelles." }, 400);
+    }
+    const published = await fetch(`${projectUrl}/rest/v1/spike_update_notes`, {
+      method: "POST",
+      headers: {
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify({ title, content, published: true }),
+    });
+    if (!published.ok) return respond({ error: "Publication impossible. Réessaie plus tard." }, 502);
+    const rows = await published.json();
+    return respond({ success: true, operation: "update_publish", updateId: rows[0]?.id });
+  }
   const email = body.email?.trim().toLowerCase();
   if (!email || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return respond({ error: "Adresse e-mail invalide." }, 400);
 
