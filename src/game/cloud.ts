@@ -125,7 +125,7 @@ export async function saveCloudProfile(userId: string, profile: Profile): Promis
 }
 
 
-export async function runAdminAction(input:{code:string;email:string;operation:"credits"|"xp"|"xp_reset"|"skin_add"|"skin_remove"|"skin_all"|"trail_add"|"trail_remove"|"trail_all"|"trail_remove_all"|"reset_inventory";amount?:number;skin?:string;trail?:string}):Promise<{success:boolean;player?:string;profile?:{xp:number;credits:number;unlockedSkins:string[]};error?:string}> {
+export async function runAdminAction(input:{code:string;email:string;operation:"credits"|"xp"|"xp_reset"|"skin_add"|"skin_remove"|"skin_all"|"trail_add"|"trail_remove"|"trail_all"|"trail_remove_all"|"reset_inventory"|"warning_create";amount?:number;skin?:string;trail?:string;reason?:string}):Promise<{success:boolean;player?:string;profile?:{xp:number;credits:number;unlockedSkins:string[]};error?:string}> {
   const session = await validSession();
   const response = await fetch(`${PROJECT_URL}/functions/v1/spike-admin`, {
     method:"POST",
@@ -137,6 +137,17 @@ export async function runAdminAction(input:{code:string;email:string;operation:"
   return data;
 }
 
+
+export interface SpikeUsernameWarning { reason: string; previous_name: string | null; created_at: string; }
+
+export async function getMySpikeWarning(): Promise<SpikeUsernameWarning | null> {
+  const session = await validSession();
+  const response = await fetch(`${PROJECT_URL}/rest/v1/rpc/get_my_spike_warning`, {
+    method: "POST", headers: headers(session.access_token), body: "{}",
+  });
+  if (!response.ok) throw await responseError(response);
+  return await response.json() as SpikeUsernameWarning | null;
+}
 
 export async function getMySpikeName(): Promise<string | null> {
   const session = await validSession();
