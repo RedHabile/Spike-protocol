@@ -8,6 +8,7 @@ import { restoreAccount, loadCloudProfile, saveCloudProfile, getMySpikeName, get
 import { AccountWidget } from "./components/Account";
 import { AdminPanel } from "./components/Admin";
 import { UsernameWarningGate } from "./components/UsernameWarningGate";
+import { UpdateNotes } from "./components/UpdateNotes";
 
 function formatCountdown(ms:number){const h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000);return [h,m,s].map(v=>String(v).padStart(2,"0")).join(":");}
 export default function App(){
