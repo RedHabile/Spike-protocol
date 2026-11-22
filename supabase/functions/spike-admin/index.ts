@@ -30,7 +30,7 @@ Deno.serve(async (req: Request) => {
   const caller = await verify.json();
   if (caller.email?.trim().toLowerCase() !== "ethan.ventre2411@gmail.com") return respond({ error: "Ce compte n’est pas autorisé à utiliser le mode admin." }, 403);
 
-  let body: { code?: string; email?: string; operation?: string; amount?: number; skin?: string; trail?: string };
+  let body: { code?: string; email?: string; operation?: string; amount?: number; skin?: string; trail?: string; reason?: string };
   try { body = await req.json(); } catch { return respond({ error: "Requête invalide." }, 400); }
   if (!body.code || body.code !== adminCode) return respond({ error: "Code admin incorrect." }, 403);
   const email = body.email?.trim().toLowerCase();
