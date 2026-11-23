@@ -125,7 +125,7 @@ export async function saveCloudProfile(userId: string, profile: Profile): Promis
 }
 
 
-export async function runAdminAction(input:{code:string;email?:string;operation:"credits"|"xp"|"xp_reset"|"skin_add"|"skin_remove"|"skin_all"|"trail_add"|"trail_remove"|"trail_all"|"trail_remove_all"|"reset_inventory"|"warning_create"|"update_publish";amount?:number;skin?:string;trail?:string;reason?:string;title?:string;content?:string}):Promise<{success:boolean;player?:string;profile?:{xp:number;credits:number;unlockedSkins:string[]};error?:string}> {
+export async function runAdminAction(input:{code:string;email?:string;operation:"credits"|"credits_reset"|"xp"|"xp_reset"|"skin_add"|"skin_remove"|"skin_all"|"skin_remove_all"|"trail_add"|"trail_remove"|"trail_all"|"trail_remove_all"|"reset_inventory"|"warning_create"|"update_publish";amount?:number;skin?:string;trail?:string;reason?:string;title?:string;content?:string}):Promise<{success:boolean;player?:string;profile?:{xp:number;credits:number;unlockedSkins:string[]};error?:string}> {
   const session = await validSession();
   const response = await fetch(`${PROJECT_URL}/functions/v1/spike-admin`, {
     method:"POST",
