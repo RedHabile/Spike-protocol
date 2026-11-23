@@ -125,7 +125,7 @@ export async function saveCloudProfile(userId: string, profile: Profile): Promis
 }
 
 
-export async function runAdminAction(input:{code:string;email:string;operation:"credits"|"xp"|"xp_reset"|"skin_add"|"skin_remove"|"skin_all"|"trail_add"|"trail_remove"|"trail_all"|"trail_remove_all"|"reset_inventory"|"warning_create";amount?:number;skin?:string;trail?:string;reason?:string}):Promise<{success:boolean;player?:string;profile?:{xp:number;credits:number;unlockedSkins:string[]};error?:string}> {
+export async function runAdminAction(input:{code:string;email?:string;operation:"credits"|"credits_reset"|"xp"|"xp_reset"|"skin_add"|"skin_remove"|"skin_all"|"skin_remove_all"|"trail_add"|"trail_remove"|"trail_all"|"trail_remove_all"|"reset_inventory"|"warning_create"|"update_publish";amount?:number;skin?:string;trail?:string;reason?:string;title?:string;content?:string}):Promise<{success:boolean;player?:string;profile?:{xp:number;credits:number;unlockedSkins:string[]};error?:string}> {
   const session = await validSession();
   const response = await fetch(`${PROJECT_URL}/functions/v1/spike-admin`, {
     method:"POST",
@@ -204,4 +204,15 @@ export async function submitSpikePlaytime(seconds: number, accountId: string): P
     body: JSON.stringify({ p_player_id: user.id, p_player_name: playerName, p_seconds: Math.min(safeSeconds, 3600) }),
   });
   if (!response.ok) throw await responseError(response);
+}
+
+export interface SpikeUpdateNote { id: string; title: string; content: string; created_at: string; }
+
+export async function loadLatestSpikeUpdate(): Promise<SpikeUpdateNote | null> {
+  const response = await fetch(`${PROJECT_URL}/rest/v1/spike_update_notes?select=id,title,content,created_at&published=eq.true&order=created_at.desc&limit=1`, {
+    headers: headers(),
+  });
+  if (!response.ok) throw await responseError(response);
+  const rows = await response.json() as SpikeUpdateNote[];
+  return rows[0] || null;
 }
