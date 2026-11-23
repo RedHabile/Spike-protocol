@@ -112,8 +112,13 @@ Deno.serve(async (req: Request) => {
     if (!Number.isSafeInteger(amount) || !amount || Math.abs(amount) > 100000) return respond({ error: "Montant invalide (1 à 100 000)." }, 400);
     const field = body.operation;
     profile[field] = Math.max(0, Math.min(100000000, (Number(profile[field]) || 0) + amount));
+  } else if (body.operation === "credits_reset") {
+    profile.credits = 0;
   } else if (body.operation === "reset_inventory") {
     profile.credits = 0;
+    profile.unlockedSkins = ["classic"];
+    profile.equippedSkin = "classic";
+  } else if (body.operation === "skin_remove_all") {
     profile.unlockedSkins = ["classic"];
     profile.equippedSkin = "classic";
   } else if (body.operation === "skin_add" || body.operation === "skin_remove" || body.operation === "skin_all") {
@@ -126,6 +131,9 @@ Deno.serve(async (req: Request) => {
       profile.unlockedSkins = skins.filter((id: string) => id !== body.skin);
       if (profile.equippedSkin === body.skin) profile.equippedSkin = "classic";
     }
+  } else if (body.operation === "trail_remove_all") {
+    profile.unlockedTrails = ["comet"];
+    profile.equippedTrail = "comet";
   } else if (body.operation === "trail_add" || body.operation === "trail_remove" || body.operation === "trail_all") {
     const trails = Array.isArray(profile.unlockedTrails) ? profile.unlockedTrails : ["comet"];
     if (body.operation === "trail_all") profile.unlockedTrails = [...trailIds];
