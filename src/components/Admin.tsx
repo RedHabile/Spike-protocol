@@ -5,7 +5,6 @@ import { runAdminAction } from "../game/cloud";
 const ADMIN_EMAIL="ethan.ventre2411@gmail.com";
 
 const skins=["classic","plasma","toxic","sunset","ice","void","cobalt","crimson","sandstorm","digital","carbon","royal","hazard","aurora","obsidian","titan","eclipse","inferno","overdrive","apex","warborn","headhunter","immortal","vanguard","overlord","spectral","nebula","prism","royalflare","deepsea","rosequartz","cyberpunk","goldrush","ghostwire","starlight","venomwave","frostbite","bloodmoon","neonviper","galaxy","chromatic","sunken","emberstorm","ultraviolet","hologram","singularity"];
-const trails=["comet","lightning","embers","prism","glitch","aurora","void","stardust","rainbow","toxicmist","pinknova","blueflame","sunflare","pixelstorm","moonlight","dragon","sakura","electric","arctic","golden","cyberstream","blackhole","dreamwave","lavacosmic"];
 
 export function AdminPanel({user}:{user:{id:string;email?:string}|null}) {
  if (user?.email?.trim().toLowerCase() !== ADMIN_EMAIL) return null;
@@ -27,7 +26,7 @@ export function AdminPanel({user}:{user:{id:string;email?:string}|null}) {
   try {
    let result: Awaited<ReturnType<typeof runAdminAction>> | null = null;
    result=await runAdminAction({code,email:kind==="update_publish"?"":email,operation:kind,title:kind==="update_publish"?updateTitle.trim():undefined,content:kind==="update_publish"?updateContent.trim():undefined,reason:kind==="warning_create"?reason.trim():undefined,amount:kind==="credits"||kind==="xp"?(Number(amount)*(direction==="add"?1:-1)):undefined,skin:kind==="skin_add"||kind==="skin_remove"?skin:undefined,trail:kind==="trail_add"||kind==="trail_remove"?trail:undefined});
-   setMessage(kind==="warning_create"?`Avertissement envoyé à ${result.player}. Le joueur devra changer de pseudo à sa prochaine connexion.`:kind==="update_publish"?"Mise à jour publiée. Elle est maintenant visible dans le menu du jeu.":`Modification enregistrée pour ${result.player}. XP : ${result.profile?.xp??"?"} · Crédits : ${result.profile?.credits??"?"}.`);if(kind==="update_publish"){setUpdateTitle("");setUpdateContent("");setPreviewing(false);setApproved(false);}
+   setMessage(kind==="warning_create"?`Avertissement envoyé à ${result.player}. L’avertissement apparaîtra dès sa prochaine vérification du compte, à la connexion ou dans le menu.`:kind==="update_publish"?"Mise à jour publiée. Elle est maintenant visible dans le menu du jeu.":`Modification enregistrée pour ${result.player}. XP : ${result.profile?.xp??"?"} · Crédits : ${result.profile?.credits??"?"}.`);if(kind==="update_publish"){setUpdateTitle("");setUpdateContent("");setPreviewing(false);setApproved(false);}
   } catch(e) { setError(e instanceof Error?e.message:"Action impossible."); }
   finally { setBusy(false); }
  };
