@@ -5,6 +5,7 @@ import { runAdminAction } from "../game/cloud";
 const ADMIN_EMAIL="ethan.ventre2411@gmail.com";
 
 const skins=["classic","plasma","toxic","sunset","ice","void","cobalt","crimson","sandstorm","digital","carbon","royal","hazard","aurora","obsidian","titan","eclipse","inferno","overdrive","apex","warborn","headhunter","immortal","vanguard","overlord","spectral","nebula","prism","royalflare","deepsea","rosequartz","cyberpunk","goldrush","ghostwire","starlight","venomwave","frostbite","bloodmoon","neonviper","galaxy","chromatic","sunken","emberstorm","ultraviolet","hologram","singularity"];
+const trails=["comet","lightning","embers","prism","glitch","aurora","void","stardust","rainbow","toxicmist","pinknova","blueflame","sunflare","pixelstorm","moonlight","dragon","sakura","electric","arctic","golden","cyberstream","blackhole","dreamwave","lavacosmic"];
 
 export function AdminPanel({user}:{user:{id:string;email?:string}|null}) {
  if (user?.email?.trim().toLowerCase() !== ADMIN_EMAIL) return null;
