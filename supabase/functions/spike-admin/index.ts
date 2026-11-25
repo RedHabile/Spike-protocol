@@ -34,6 +34,29 @@ Deno.serve(async (req: Request) => {
   try { body = await req.json(); } catch { return respond({ error: "Requête invalide." }, 400); }
   if (!body.code || body.code !== adminCode) return respond({ error: "Code admin incorrect." }, 403);
 
+  if (body.operation === "list_records") {
+    const [scoresResponse, timeResponse] = await Promise.all([
+      fetch(projectUrl + "/rest/v1/leaderboard?select=player_id,player_name,best_score&order=best_score.desc&limit=1000", { headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey } }),
+      fetch(projectUrl + "/rest/v1/playtime_leaderboard?select=player_id,player_name,total_seconds&order=total_seconds.desc&limit=1000", { headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey } }),
+    ]);
+    if (!scoresResponse.ok || !timeResponse.ok) return respond({ error: "Lecture des classements impossible." }, 502);
+    const [scores, playtimes] = await Promise.all([scoresResponse.json(), timeResponse.json()]);
+    const usersById = new Map<string,string>();
+    for (let page=1; page<=100; page++) {
+      const usersResponse=await fetch(projectUrl + "/auth/v1/admin/users?page=" + page + "&per_page=100",{headers:{apikey:serviceKey,Authorization:"Bearer " + serviceKey}});
+      if(!usersResponse.ok) return respond({error:"Impossible de consulter les comptes."},502);
+      const usersData=await usersResponse.json();
+      const users=Array.isArray(usersData.users)?usersData.users:[];
+      for(const user of users) if(user.id && user.email) usersById.set(user.id,user.email);
+      if(users.length<100) break;
+    }
+    const records=[
+      ...scores.map((row:{player_id:string;player_name:string;best_score:number})=>({source:"score",player_id:row.player_id,player_name:row.player_name,value:String(row.best_score),email:usersById.get(row.player_id)||null})),
+      ...playtimes.map((row:{player_id:string;player_name:string;total_seconds:number})=>({source:"playtime",player_id:row.player_id,player_name:row.player_name,value:Math.floor(row.total_seconds/3600)+"h "+Math.floor(row.total_seconds%3600/60)+"min",email:usersById.get(row.player_id)||null})),
+    ];
+    return respond({success:true,records});
+  }
+
   if (body.operation === "update_publish") {
     const title = body.title?.trim() || "";
     const content = body.content?.trim() || "";
