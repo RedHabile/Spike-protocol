@@ -125,6 +125,16 @@ export async function saveCloudProfile(userId: string, profile: Profile): Promis
 }
 
 
+export interface AdminRecord { source:"score"|"playtime"; player_id:string; player_name:string; value:string; email:string|null; }
+
+export async function fetchAdminRecords(code:string):Promise<AdminRecord[]> {
+  const session=await validSession();
+  const response=await fetch(PROJECT_URL+"/functions/v1/spike-admin",{method:"POST",headers:{...headers(session.access_token)},body:JSON.stringify({code,operation:"list_records"})});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok) throw new Error(data.error||"Erreur admin ("+response.status+").");
+  return data.records as AdminRecord[];
+}
+
 export async function runAdminAction(input:{code:string;email?:string;operation:"credits"|"credits_reset"|"xp"|"xp_reset"|"skin_add"|"skin_remove"|"skin_all"|"skin_remove_all"|"trail_add"|"trail_remove"|"trail_all"|"trail_remove_all"|"reset_inventory"|"warning_create"|"update_publish";amount?:number;skin?:string;trail?:string;reason?:string;title?:string;content?:string}):Promise<{success:boolean;player?:string;profile?:{xp:number;credits:number;unlockedSkins:string[]};error?:string}> {
   const session = await validSession();
   const response = await fetch(`${PROJECT_URL}/functions/v1/spike-admin`, {
